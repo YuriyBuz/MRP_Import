@@ -18,72 +18,88 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
 <style>
-:root{
-  --void:#04060D; --deck:#090F1C; --hull:#0F1829; --hull2:#131F35;
-  --line:rgba(120,180,255,.13); --line2:rgba(120,180,255,.28);
-  --ion:#4CC9F0; --ion-deep:#1B6FFF;
-  --gold:#F2A33C; --flare:#FF5470; --jade:#3DDC97;
-  --ink:#E6F0FF; --mute:#7C8FAC; --dim:#4A5C77;
-  --glow:0 0 24px rgba(76,201,240,.25);
-  --radius:14px;
+/* ================= ТЕМИ ================= */
+html[data-theme="dark"]{
+  --void:#04060D; --deck:#0C1626; --hull:#132038; --hull2:#1A2A47;
+  --line:rgba(150,195,255,.24); --line2:rgba(150,195,255,.42); --grid:rgba(120,180,255,.055);
+  --ion:#5FD4FF; --ion-soft:rgba(95,212,255,.16);
+  --gold:#FFBC4D; --flare:#FF6B85; --jade:#4EE8A6; --violet:#A78BFA;
+  --ink:#F2F7FF; --mute:#AFC4E0; --dim:#8AA2C0;
+  --glow:0 0 26px rgba(95,212,255,.30);
+  --shadow:0 20px 50px -34px rgba(0,0,0,.9);
+  --sheen:rgba(255,255,255,.03);
 }
+html[data-theme="light"]{
+  --void:#EEF2F8; --deck:#FFFFFF; --hull:#FFFFFF; --hull2:#F2F6FB;
+  --line:#CBD8E8; --line2:#A7BCD4; --grid:rgba(12,60,120,.045);
+  --ion:#0A62C4; --ion-soft:rgba(10,98,196,.10);
+  --gold:#9A5B00; --flare:#C01741; --jade:#0B7047; --violet:#6D4AC9;
+  --ink:#0B1626; --mute:#42566E; --dim:#61758F;
+  --glow:0 0 0 1px rgba(10,98,196,.14);
+  --shadow:0 12px 32px -26px rgba(11,22,38,.5);
+  --sheen:rgba(11,22,38,.02);
+}
+:root{--radius:14px}
+
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{
   background:var(--void); color:var(--ink);
   font-family:'Exo 2',system-ui,sans-serif; font-size:14px;
   background-image:
-    radial-gradient(1200px 600px at 50% -10%, rgba(27,111,255,.16), transparent 60%),
-    linear-gradient(transparent 95%, rgba(76,201,240,.045) 95%),
-    linear-gradient(90deg, transparent 95%, rgba(76,201,240,.045) 95%);
+    radial-gradient(1200px 620px at 50% -12%, var(--ion-soft), transparent 62%),
+    linear-gradient(transparent 95%, var(--grid) 95%),
+    linear-gradient(90deg, transparent 95%, var(--grid) 95%);
   background-size:auto, 34px 34px, 34px 34px;
   min-height:100vh; padding-bottom:60px;
+  transition:background-color .2s, color .2s;
 }
 .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
 button{font-family:inherit;cursor:pointer}
 input,select{font-family:inherit}
 input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--ion);outline-offset:2px}
 
-/* ---------- HUD ---------- */
+/* ================= HUD ================= */
 .hud{
   position:sticky;top:0;z-index:60;
-  background:linear-gradient(180deg,rgba(9,15,28,.97),rgba(9,15,28,.86));
+  background:color-mix(in srgb, var(--deck) 92%, transparent);
   backdrop-filter:blur(14px);
   border-bottom:1px solid var(--line);
-  box-shadow:0 1px 0 rgba(76,201,240,.16), 0 18px 40px -30px rgba(27,111,255,.9);
-  padding:12px 22px; display:flex; align-items:center; gap:22px; flex-wrap:wrap;
+  box-shadow:0 1px 0 var(--ion-soft), var(--shadow);
+  padding:12px 22px; display:flex; align-items:center; gap:20px; flex-wrap:wrap;
 }
 .brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
-.brand img{height:26px;width:auto;filter:brightness(1.9) saturate(.2)}
+.brand img{height:26px;width:auto}
+html[data-theme="dark"] .brand img{filter:brightness(2) saturate(.15)}
 .wordmark{font-weight:800;font-size:17px;letter-spacing:.24em;text-transform:uppercase}
 .wordmark span{color:var(--ion)}
-.hud-tel{display:flex;gap:20px;flex:1;flex-wrap:wrap;font-size:11px;color:var(--mute)}
+.hud-tel{display:flex;gap:18px;flex:1;flex-wrap:wrap;font-size:11px;color:var(--mute)}
 .tel b{display:block;color:var(--ink);font-size:12.5px;letter-spacing:.04em;margin-top:2px}
 .tel .warn{color:var(--gold)}
 .hud-act{display:flex;gap:8px;flex-wrap:wrap}
 
 .btn{
-  border:1px solid var(--line2); background:rgba(19,31,53,.7); color:var(--ink);
+  border:1px solid var(--line2); background:var(--hull); color:var(--ink);
   padding:8px 14px; border-radius:9px; font-size:11.5px; font-weight:600;
   letter-spacing:.1em; text-transform:uppercase; display:inline-flex; align-items:center; gap:7px;
   transition:.18s;
 }
-.btn:hover{border-color:var(--ion);box-shadow:var(--glow);color:#fff}
-.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
-.btn-key{background:linear-gradient(180deg,rgba(242,163,60,.22),rgba(242,163,60,.08));border-color:rgba(242,163,60,.55);color:#FFD9A0}
-.btn-key:hover{border-color:var(--gold);box-shadow:0 0 24px rgba(242,163,60,.3)}
+.btn:hover{border-color:var(--ion);box-shadow:var(--glow)}
+.btn:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+.btn-key{background:color-mix(in srgb, var(--gold) 16%, var(--hull));border-color:var(--gold);color:var(--gold)}
 .btn-sm{padding:6px 11px;font-size:10.5px}
+.btn-ic{padding:8px 11px}
 
-/* ---------- shell ---------- */
-.shell{max-width:1560px;margin:0 auto;padding:22px}
+/* ================= каркас ================= */
+.shell{max-width:1620px;margin:0 auto;padding:22px}
 .panel{
   background:linear-gradient(180deg,var(--hull),var(--deck));
   border:1px solid var(--line); border-radius:var(--radius);
-  position:relative; overflow:hidden;
+  position:relative; overflow:hidden; box-shadow:var(--shadow);
 }
 .panel::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,var(--ion),transparent);opacity:.5;
+  background:linear-gradient(90deg,transparent,var(--ion),transparent);opacity:.55;
 }
 .eyebrow{
   font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);
@@ -91,39 +107,37 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
 }
 .eyebrow::after{content:'';flex:1;height:1px;background:var(--line)}
 
-/* ---------- horizon ---------- */
+/* ================= горизонт ================= */
 .horizon{padding:18px 20px 8px;margin-bottom:18px}
 .horizon svg{width:100%;height:auto;display:block;margin-top:14px}
 .legend{display:flex;gap:18px;flex-wrap:wrap;font-size:10.5px;color:var(--mute);padding:6px 2px 10px}
-.legend i{display:inline-block;width:16px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.legend i{display:inline-block;width:16px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
 
-/* ---------- tiles ---------- */
-.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+/* ================= плитки ================= */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-bottom:18px}
 .tile{padding:14px 16px}
 .tile .k{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
 .tile .v{font-size:30px;font-weight:700;line-height:1.1;margin-top:6px}
 .tile .s{font-size:10.5px;color:var(--mute);margin-top:2px}
-.v-now{color:var(--flare);text-shadow:0 0 22px rgba(255,84,112,.5)}
-.v-soon{color:var(--gold);text-shadow:0 0 22px rgba(242,163,60,.4)}
-.v-ion{color:var(--ion);text-shadow:var(--glow)}
+.v-now{color:var(--flare)}
+.v-soon{color:var(--gold)}
+.v-ion{color:var(--ion)}
 
-/* ---------- toolbar ---------- */
+/* ================= панель фільтрів ================= */
 .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
 .field{
-  background:rgba(9,15,28,.9);border:1px solid var(--line);border-radius:9px;
+  background:var(--deck);border:1px solid var(--line);border-radius:9px;
   color:var(--ink);padding:9px 12px;font-size:13px;
 }
 .field:focus{border-color:var(--ion);box-shadow:var(--glow);outline:none}
 .search{min-width:230px}
 
-/* ---------- card ---------- */
+/* ================= картка ================= */
 .card{margin-bottom:14px}
-.card-grid{display:grid;grid-template-columns:minmax(320px,1.15fr) 150px repeat(3,minmax(210px,1fr));gap:0}
+.card-grid{display:grid;grid-template-columns:minmax(300px,1.05fr) 158px repeat(3,minmax(238px,1fr))}
 .pad{padding:16px}
 .cell{border-left:1px solid var(--line)}
-.idx{
-  font-size:10px;color:var(--dim);letter-spacing:.2em;
-}
+.idx{font-size:10px;color:var(--dim);letter-spacing:.2em}
 .name-in{
   width:100%;background:transparent;border:none;border-bottom:1px solid var(--line);
   color:var(--ink);font-size:15px;font-weight:600;padding:6px 0;margin:4px 0 14px;
@@ -132,81 +146,109 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
 .duo{display:flex;gap:10px}
 .lab{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:5px}
 .num-in{
-  width:100%;background:rgba(4,6,13,.65);border:1px solid var(--line);border-radius:8px;
+  width:100%;background:var(--deck);border:1px solid var(--line);border-radius:8px;
   color:var(--ion);padding:7px 9px;font-size:14px;font-weight:700;
   font-family:'JetBrains Mono',monospace;
 }
 .num-in:focus{border-color:var(--ion);box-shadow:var(--glow);outline:none}
 .date-in{
-  width:100%;background:rgba(4,6,13,.65);border:1px solid var(--line);border-radius:8px;
+  width:100%;background:var(--deck);border:1px solid var(--line);border-radius:8px;
   color:var(--ink);padding:6px 7px;font-size:12px;font-family:'JetBrains Mono',monospace;
 }
-.date-in::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(1) saturate(4) hue-rotate(160deg)}
+html[data-theme="dark"] .date-in::-webkit-calendar-picker-indicator{filter:invert(.85) sepia(1) saturate(4) hue-rotate(165deg)}
 .txt-in{
-  width:100%;background:rgba(4,6,13,.65);border:1px solid var(--line);border-radius:8px;
+  width:100%;background:var(--deck);border:1px solid var(--line);border-radius:8px;
   color:var(--mute);padding:5px 8px;font-size:11px;font-family:'JetBrains Mono',monospace;
 }
-.real{margin-top:12px;font-size:11px;color:var(--mute);line-height:1.6}
+.real{margin-top:12px;font-size:11.5px;color:var(--mute);line-height:1.65}
 .real b{color:var(--ink);font-family:'JetBrains Mono',monospace}
 
-/* order gate */
 .gate{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:4px}
-.gate .when{font-size:19px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:-.02em}
+.gate .when{font-size:19px;font-weight:700;font-family:'JetBrains Mono',monospace}
 .gate .cap{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
-.gate .sub{font-size:10.5px;color:var(--mute)}
-.g-now{color:var(--flare);text-shadow:0 0 20px rgba(255,84,112,.55)}
-.g-soon{color:var(--gold);text-shadow:0 0 20px rgba(242,163,60,.4)}
+.gate .sub{font-size:10.5px;color:var(--mute);line-height:1.4}
+.g-now{color:var(--flare)}
+.g-soon{color:var(--gold)}
 .g-ok{color:var(--jade)}
 .g-idle{color:var(--dim)}
 
-/* delivery slot */
+/* ================= слот доставки ================= */
 .slot{position:relative}
-.slot.live{background:linear-gradient(180deg,rgba(27,111,255,.10),transparent)}
+.slot.live{background:linear-gradient(180deg,var(--ion-soft),transparent 70%)}
 .slot-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
-.slot-n{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.slot-n{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);font-weight:600}
 .slot.live .slot-n{color:var(--ion)}
 .route{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:end;margin-bottom:10px}
 .transit{font-size:9.5px;color:var(--ion);text-align:center;padding-bottom:8px;white-space:nowrap}
-.proj{border-top:1px solid var(--line);padding-top:9px;font-size:11px;display:grid;grid-template-columns:1fr auto;gap:5px;color:var(--mute)}
+.proj{border-top:1px solid var(--line);padding-top:9px;margin-top:10px;font-size:11px;display:grid;grid-template-columns:1fr auto;gap:5px;color:var(--mute)}
 .proj b{font-family:'JetBrains Mono',monospace;color:var(--ink);font-size:12.5px}
 .proj b.neg{color:var(--flare)}
 .proj b.pos{color:var(--jade)}
+.short{
+  margin-top:8px;font-size:10.5px;line-height:1.45;color:var(--flare);
+  border-left:2px solid var(--flare);padding-left:8px;
+}
 
-.rim{height:2px;background:linear-gradient(90deg,transparent,var(--ion),transparent);opacity:.35}
-.rim-now{background:linear-gradient(90deg,transparent,var(--flare),transparent);opacity:.75}
-.rim-soon{background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.6}
+/* ---- конвеєр етапів ---- */
+.pipe{display:flex;gap:3px;margin:10px 0 6px}
+.pipe button{
+  flex:1;height:16px;border-radius:4px;border:1px solid var(--line);
+  background:var(--deck);padding:0;position:relative;transition:.15s;
+}
+.pipe button:hover{border-color:var(--ion)}
+.pipe button.on{background:var(--ion);border-color:var(--ion)}
+.pipe button.on.done{background:var(--jade);border-color:var(--jade)}
+.pipe button.cur{box-shadow:var(--glow)}
+.pipe button span{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:7.5px;font-weight:700;letter-spacing:.02em;color:var(--dim);
+}
+.pipe button.on span{color:var(--void)}
+.stage-now{font-size:10.5px;color:var(--mute);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.stage-now b{color:var(--ion);font-weight:600}
+.pays{display:flex;gap:4px}
+.pays button{
+  border:1px solid var(--line);background:var(--deck);color:var(--dim);
+  font-size:9.5px;padding:3px 8px;border-radius:20px;transition:.15s;
+}
+.pays button:hover{border-color:var(--gold)}
+.pays button.on{background:color-mix(in srgb, var(--gold) 20%, var(--deck));border-color:var(--gold);color:var(--gold);font-weight:700}
+
+.rim{height:2px;background:linear-gradient(90deg,transparent,var(--ion),transparent);opacity:.4}
+.rim-now{background:linear-gradient(90deg,transparent,var(--flare),transparent);opacity:.85}
+.rim-soon{background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.7}
 
 .flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .flag{
-  font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:20px;
-  border:1px solid rgba(242,163,60,.4);color:var(--gold);background:rgba(242,163,60,.08);
+  font-size:9.5px;padding:3px 9px;border-radius:20px;
+  border:1px solid var(--gold);color:var(--gold);
+  background:color-mix(in srgb, var(--gold) 12%, transparent);
 }
-.flag.bad{border-color:rgba(255,84,112,.45);color:var(--flare);background:rgba(255,84,112,.08)}
+.flag.bad{border-color:var(--flare);color:var(--flare);background:color-mix(in srgb, var(--flare) 12%, transparent)}
 
-.drawer{border-top:1px solid var(--line);background:rgba(4,6,13,.5);padding:18px}
-.ai-text{white-space:pre-wrap;line-height:1.75;font-size:13px;color:#CBDDF2;max-height:520px;overflow:auto}
+.drawer{border-top:1px solid var(--line);background:var(--sheen);padding:18px}
+.ai-text{white-space:pre-wrap;line-height:1.75;font-size:13px;color:var(--ink);max-height:520px;overflow:auto}
 
 .toast{
   position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:200;
-  background:rgba(15,24,41,.97);border:1px solid var(--line2);border-radius:11px;
-  padding:12px 20px;font-size:13px;box-shadow:0 0 40px rgba(27,111,255,.35);
+  background:var(--hull);border:1px solid var(--line2);border-radius:11px;
+  padding:12px 20px;font-size:13px;box-shadow:var(--shadow);color:var(--ink);
 }
-.toast.err{border-color:rgba(255,84,112,.6);color:#FFC4CE}
+.toast.err{border-color:var(--flare);color:var(--flare)}
 
 .empty{text-align:center;padding:64px 24px;color:var(--mute)}
 .empty h2{font-weight:600;font-size:17px;color:var(--ink);margin:0 0 8px}
 
-/* settings */
 .sett{max-width:760px;margin:0 auto}
 .sett h3{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ion);margin:26px 0 12px;font-weight:600}
 .grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-.hint{font-size:10.5px;color:var(--dim);margin-top:5px;line-height:1.5}
+.hint{font-size:10.5px;color:var(--dim);margin-top:5px;line-height:1.55}
 
-@media (max-width:1180px){
+@media (max-width:1240px){
   .card-grid{grid-template-columns:1fr 1fr}
   .cell{border-left:none;border-top:1px solid var(--line)}
 }
-@media (max-width:720px){
+@media (max-width:760px){
   .card-grid{grid-template-columns:1fr}
   .shell{padding:14px}
   .hud{padding:10px 14px;gap:12px}
@@ -215,32 +257,20 @@ input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid 
   @keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
   .scan{position:absolute;inset:0;pointer-events:none;overflow:hidden}
   .scan i{position:absolute;top:0;bottom:0;width:34%;
-    background:linear-gradient(90deg,transparent,rgba(76,201,240,.05),transparent);
+    background:linear-gradient(90deg,transparent,var(--ion-soft),transparent);
     animation:sweep 9s linear infinite}
-  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+  @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
   .pulse{animation:pulse 2.2s ease-in-out infinite}
 }
-
-/* світла тема для друку / PDF */
-.export-light{
-  --void:#FFFFFF;--deck:#FFFFFF;--hull:#F7F9FC;--hull2:#EEF3F9;
-  --line:#D6E0EC;--line2:#B9C9DC;--ink:#0B1220;--mute:#4B5B70;--dim:#7A8CA8;
-  --ion:#0B69C7;--gold:#B26A00;--flare:#C81E4A;--jade:#0F7A55;--glow:none;
-  background-image:none !important;background:#fff !important;
-}
-.export-light .panel{box-shadow:none}
-.export-light .no-print{display:none !important}
-.export-light .num-in,.export-light .date-in,.export-light .txt-in,.export-light .name-in{
-  background:transparent;border-color:#D6E0EC;color:#0B1220
-}
-.export-light .scan{display:none}
+.no-print{}
+body.printing .no-print{display:none !important}
 </style>
 </head>
 <body>
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useEffect, useMemo, useRef } = React;
+const { useState, useEffect, useMemo } = React;
 
 /* ================= утиліти ================= */
 const DAY = 86400000;
@@ -258,8 +288,22 @@ const store = {
   set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
 
+/* ================= етапи ================= */
+const STAGES = [
+  { k:'plan',    s:'ПЛАН', t:'Заплановано' },
+  { k:'ordered', s:'ЗАМ',  t:'Замовлення розміщено' },
+  { k:'prod',    s:'ВИР',  t:'У виробництві' },
+  { k:'sea',     s:'МОРЕ', t:'У дорозі: море' },
+  { k:'port',    s:'ПОРТ', t:'Порт і митниця' },
+  { k:'land',    s:'АВТО', t:'У дорозі: авто' },
+  { k:'done',    s:'СКЛ',  t:'Прийнято на склад' }
+];
+const stageIdx = k => STAGES.findIndex(s => s.k === k);
+const SHIPPED = ['sea','port','land','done'];
+const PAYS = [ {k:'',t:'—',full:'Без оплати'}, {k:'pre',t:'ПЕРЕД',full:'Передоплата'}, {k:'full',t:'ПОВНА',full:'Повна оплата'} ];
+
 /* ================= розрахунок ================= */
-const HORIZON = 400;
+const HORIZON = 420;
 
 function analyze(item, ctx){
   const today = ctx.today;
@@ -267,157 +311,191 @@ function analyze(item, ctx){
   const monthly = num(item.consumption);
   const daily = monthly / 30;
   const entered = num(item.stock);
-  const leadTime = ctx.leadTime;
-  const safetyUnits = monthly * num(ctx.minStock);
-  const overUnits = monthly * num(ctx.overStock);
+  const lead = ctx.leadTime;
+  const safety = monthly * num(ctx.minStock);
+  const over = monthly * num(ctx.overStock);
 
   const dels = [1,2,3].map(n => ({
     n,
     qty: num(item['d'+n+'Qty']),
     send: parseISO(item['d'+n+'Send']),
     arrive: parseISO(item['d'+n+'Date']),
-    cont: item['d'+n+'Cont'] || ''
+    cont: item['d'+n+'Cont'] || '',
+    stage: item['d'+n+'Stage'] || '',
+    pay: item['d'+n+'Pay'] || ''
   }));
 
-  // залишок, приведений до сьогодні
   const aged = Math.max(0, dayDiff(stockDate, today));
   let stockNow = entered - aged * daily;
+
   dels.forEach(d => {
-    if (d.arrive && d.qty > 0 && d.arrive > stockDate && d.arrive <= today) stockNow += d.qty;
+    if (d.qty <= 0) return;
+    const receivedFlag = d.stage === 'done';
+    const arrivedByDate = d.arrive && d.arrive <= today;
+    if ((receivedFlag || arrivedByDate) && (!d.arrive || d.arrive > stockDate)) stockNow += d.qty;
   });
 
-  const future = dels.filter(d => d.arrive && d.qty > 0 && d.arrive > today)
-                     .map(d => ({...d, day: dayDiff(today, d.arrive)}))
-                     .sort((a,b) => a.day - b.day);
+  // склад не буває мінусовим: нестача закривається закупівлею на внутрішньому ринку
+  let preGap = 0;
+  if (stockNow < 0){ preGap = -stockNow; stockNow = 0; }
 
-  const stockAt = day => {
-    let s = stockNow - day * daily;
-    for (const d of future) if (d.day <= day) s += d.qty;
-    return s;
-  };
-  const firstBelow = threshold => {
-    if (daily <= 0) return null;
-    for (let d = 0; d <= HORIZON; d++) if (stockAt(d) < threshold) return d;
-    return null;
-  };
+  const future = dels
+    .filter(d => d.qty > 0 && d.arrive && d.arrive > today && d.stage !== 'done')
+    .map(d => ({ ...d, day: dayDiff(today, d.arrive), confirmed: SHIPPED.indexOf(d.stage) >= 0 }))
+    .sort((a,b) => a.day - b.day);
 
-  const outDay    = firstBelow(0);
-  const safetyDay = firstBelow(safetyUnits);
-  const orderDay  = safetyDay === null ? null : safetyDay - leadTime;
+  // денна симуляція з нулем як підлогою
+  const series = new Array(HORIZON + 1);
+  const gaps = [];
+  let s = stockNow, gFrom = null, gQty = 0;
+  for (let d = 0; d <= HORIZON; d++){
+    if (d > 0) s -= daily;
+    for (const del of future) if (del.day === d) s += del.qty;
+    if (s < 0){
+      if (gFrom === null) gFrom = d;
+      gQty += -s;
+      s = 0;
+    } else if (gFrom !== null){
+      gaps.push({ from:gFrom, to:d-1, qty:gQty });
+      gFrom = null; gQty = 0;
+    }
+    series[d] = s;
+  }
+  if (gFrom !== null) gaps.push({ from:gFrom, to:HORIZON, qty:gQty, open:true });
+
+  const stockAt = day => series[Math.max(0, Math.min(HORIZON, Math.round(day)))];
+  const firstGap = gaps.length ? gaps[0] : null;
+  const localBuy = gaps.reduce((t,g) => t + g.qty, 0);
+
+  let firstSafety = null, lastOk = -1;
+  if (daily > 0){
+    for (let d = 0; d <= HORIZON; d++){
+      if (firstSafety === null && series[d] < safety) firstSafety = d;
+      if (series[d] >= safety) lastOk = d;
+    }
+  }
+  // останній день стабільного покриття → від нього рахуємо замовлення
+  const coverUntil = daily > 0 ? lastOk + 1 : null;
+  const beyond = coverUntil !== null && coverUntil > HORIZON;
+  const orderDay = (coverUntil === null || beyond) ? null : coverUntil - lead;
 
   let state = 'ok';
   if (monthly <= 0) state = 'idle';
   else if (orderDay !== null && orderDay <= 0) state = 'now';
   else if (orderDay !== null && orderDay <= 30) state = 'soon';
-  else if (stockNow > overUnits && overUnits > 0) state = 'over';
+  else if (over > 0 && stockNow > over) state = 'over';
 
-  // per-delivery проєкція
   const slots = {};
   dels.forEach(d => {
-    if (!d.arrive) { slots[d.n] = null; return; }
+    if (!d.arrive){ slots[d.n] = null; return; }
     const day = dayDiff(today, d.arrive);
-    if (day <= 0) { slots[d.n] = { arrived:true, day, before:null, after:null }; return; }
-    const before = stockAt(day) - d.qty;
-    slots[d.n] = { arrived:false, day, before, after: before + d.qty };
+    if (d.stage === 'done'){ slots[d.n] = { received:true }; return; }
+    if (day <= 0){ slots[d.n] = { arrived:true, day }; return; }
+    const before = series[Math.max(0, Math.min(HORIZON, day - 1))];
+    const after  = series[Math.min(HORIZON, day)];
+    const g = gaps.filter(x => x.from <= day - 1 && x.to >= day - 1)[0];
+    slots[d.n] = {
+      day, before, after,
+      coversTo: monthly > 0 ? after / monthly : Infinity,
+      gapQty: g ? g.qty : 0,
+      gapFrom: g ? addDays(today, g.from) : null,
+      gapDays: g ? (Math.min(g.to, day - 1) - g.from + 1) : 0
+    };
   });
 
-  // аномалії даних
   const flags = [];
   dels.forEach(d => {
     if (d.send && d.arrive && d.arrive < d.send) flags.push({t:`Поставка ${d.n}: прибуття раніше за відправку`, bad:true});
-    if (d.send && d.arrive){
-      const tr = dayDiff(d.send, d.arrive);
-      if (tr > 150) flags.push({t:`Поставка ${d.n}: транзит ${tr} дн — перевірте рік`, bad:true});
-    }
-    if (d.arrive && dayDiff(today, d.arrive) > 365) flags.push({t:`Поставка ${d.n}: прибуття ${fmtD(d.arrive)} — перевірте рік`, bad:false});
+    if (d.send && d.arrive && dayDiff(d.send, d.arrive) > 150) flags.push({t:`Поставка ${d.n}: транзит ${dayDiff(d.send,d.arrive)} дн — перевірте рік`, bad:true});
+    if (d.arrive && dayDiff(today, d.arrive) > 270) flags.push({t:`Поставка ${d.n}: прибуття ${fmtD(d.arrive)} — перевірте рік`, bad:false});
     if (d.qty > 0 && !d.arrive) flags.push({t:`Поставка ${d.n}: є кількість, немає дати прибуття`, bad:false});
     if (d.arrive && d.qty <= 0) flags.push({t:`Поставка ${d.n}: є дата, немає кількості`, bad:false});
+    if (d.qty > 0 && d.arrive && d.arrive > today && !d.stage) flags.push({t:`Поставка ${d.n}: не вказано етап`, bad:false});
   });
   if (monthly <= 0 && entered > 0) flags.push({t:'Витрата не вказана — покриття не рахується', bad:false});
-  if (stockNow < 0) flags.push({t:'Розрахунковий залишок від\u2019ємний', bad:true});
+  if (preGap > 0) flags.push({t:`Запас вичерпано ще до сьогодні · добрано на ринку ≈ ${fmtN(preGap)} шт`, bad:true});
+  // тимчасовий провал нижче мінімуму, який далі закривається поставкою
+  if (firstSafety !== null && coverUntil !== null && firstSafety < coverUntil)
+    flags.push({t:`Тимчасово нижче мінімуму з ${fmtD(addDays(today, firstSafety))}`, bad:false});
 
   return {
-    monthly, daily, entered, aged, stockNow, safetyUnits, overUnits,
+    monthly, daily, entered, aged, stockNow, safety, over,
     covNow: monthly > 0 ? stockNow / monthly : Infinity,
-    covEntered: monthly > 0 ? entered / monthly : Infinity,
     dels, future, slots, flags, state,
-    outDay, safetyDay, orderDay,
-    outDate: outDay === null ? null : addDays(today, outDay),
+    series, gaps, firstGap, localBuy, preGap,
+    firstZero: firstGap ? firstGap.from : null,
+    coverUntil, beyond, orderDay,
+    zeroDate: firstGap ? addDays(today, firstGap.from) : null,
+    zeroEndDate: (firstGap && !firstGap.open) ? addDays(today, firstGap.to) : null,
+    coverDate: (coverUntil === null || beyond) ? null : addDays(today, coverUntil),
     orderDate: orderDay === null ? null : addDays(today, orderDay),
     stockAt
   };
 }
 
-/* ================= горизонт (сигнатурний елемент) ================= */
-function Horizon({ rows, today, onPick }){
-  const W = 1500, padL = 250, padR = 30, padT = 26, rowH = 17;
-  const days = 365;
-  const inner = W - padL - padR;
-  const H = padT + rows.length * rowH + 26;
+/* ================= горизонт ================= */
+function Horizon({ rows, today, onPick, theme }){
+  const W = 1560, padL = 262, padR = 34, padT = 28, rowH = 18;
+  const days = 365, inner = W - padL - padR;
+  const H = padT + rows.length * rowH + 28;
   const x = d => padL + (d / days) * inner;
+  const axis = theme === 'light' ? '#61758F' : '#8AA2C0';
+  const grid = theme === 'light' ? 'rgba(12,60,120,.10)' : 'rgba(150,195,255,.10)';
 
   const months = [];
   for (let i = 0; i <= days; i++){
     const dt = addDays(today, i);
-    if (dt.getDate() === 1) months.push({ d:i, label: dt.toLocaleDateString('uk-UA',{month:'short'}), first: dt.getMonth()===0 });
+    if (dt.getDate() === 1) months.push({ d:i, dt });
   }
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" role="img"
-         aria-label="Горизонт постачання на 12 місяців">
-      <defs>
-        <linearGradient id="todayG" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#4CC9F0" stopOpacity="0"/>
-          <stop offset="20%" stopColor="#4CC9F0" stopOpacity=".9"/>
-          <stop offset="100%" stopColor="#4CC9F0" stopOpacity=".15"/>
-        </linearGradient>
-      </defs>
-
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" role="img" aria-label="Горизонт постачання">
       {months.map(m => (
         <g key={m.d}>
-          <line x1={x(m.d)} y1={padT-8} x2={x(m.d)} y2={H-20} stroke="rgba(120,180,255,.09)" strokeWidth="1"/>
-          <text x={x(m.d)} y={H-6} fill="#4A5C77" fontSize="10" textAnchor="middle"
-                fontFamily="JetBrains Mono, monospace">{m.first ? m.label.toUpperCase()+' \u0027'+String(addDays(today,m.d).getFullYear()).slice(2) : m.label}</text>
+          <line x1={x(m.d)} y1={padT-8} x2={x(m.d)} y2={H-22} stroke={grid}/>
+          <text x={x(m.d)} y={H-6} fill={axis} fontSize="10.5" textAnchor="middle" fontFamily="JetBrains Mono, monospace">
+            {m.dt.getMonth()===0
+              ? m.dt.toLocaleDateString('uk-UA',{month:'short'}).toUpperCase()+" '"+String(m.dt.getFullYear()).slice(2)
+              : m.dt.toLocaleDateString('uk-UA',{month:'short'})}
+          </text>
         </g>
       ))}
 
-      <line x1={x(0)} y1={padT-14} x2={x(0)} y2={H-20} stroke="url(#todayG)" strokeWidth="2"/>
-      <text x={x(0)} y={padT-18} fill="#4CC9F0" fontSize="10" textAnchor="middle"
+      <line x1={x(0)} y1={padT-14} x2={x(0)} y2={H-22} stroke="var(--ion)" strokeWidth="2" opacity=".8"/>
+      <text x={x(0)} y={padT-19} fill="var(--ion)" fontSize="10" textAnchor="middle"
             fontFamily="JetBrains Mono, monospace" letterSpacing="1.5">СЬОГОДНІ</text>
 
       {rows.map((r, i) => {
-        const y = padT + i * rowH;
-        const a = r.a;
+        const y = padT + i * rowH, a = r.a;
         const cells = [];
         for (let w = 0; w < 52; w++){
-          const d0 = w * 7;
-          const s = a.stockAt(d0);
-          let fill = 'rgba(61,220,151,.42)';
-          if (a.monthly <= 0) fill = 'rgba(74,92,119,.22)';
-          else if (s < 0) fill = 'rgba(255,84,112,.85)';
-          else if (s < a.safetyUnits) fill = 'rgba(242,163,60,.75)';
-          cells.push(<rect key={w} x={x(d0)} y={y+4} width={inner/52 - 1} height="7" rx="1.5" fill={fill}/>);
+          const s = a.stockAt(w*7);
+          let fill = 'var(--jade)', op = .8;
+          if (a.monthly <= 0){ fill = 'var(--dim)'; op = .3; }
+          else if (s < 0){ fill = 'var(--flare)'; op = 1; }
+          else if (s < a.safety){ fill = 'var(--gold)'; op = .95; }
+          cells.push(<rect key={w} x={x(w*7)} y={y+4} width={inner/52 - 1} height="8" rx="1.5" fill={fill} opacity={op}/>);
         }
         return (
           <g key={r.item.id} style={{cursor:'pointer'}} onClick={() => onPick(r.item.id)}>
-            <rect x="0" y={y-1} width={W} height={rowH} fill="transparent"/>
-            <text x={padL-12} y={y+11} fill={a.state==='now'?'#FF5470':a.state==='soon'?'#F2A33C':'#7C8FAC'}
-                  fontSize="11" textAnchor="end">
-              {r.item.name.length > 38 ? r.item.name.slice(0,37)+'…' : r.item.name}
+            <text x={padL-12} y={y+12} fontSize="11.5" textAnchor="end"
+                  fill={a.state==='now'?'var(--flare)':a.state==='soon'?'var(--gold)':'var(--mute)'}>
+              {r.item.name.length > 40 ? r.item.name.slice(0,39)+'…' : r.item.name}
             </text>
             {cells}
             {a.future.map(d => d.day <= days && (
               <g key={d.n}>
-                <line x1={x(d.day)} y1={y+2} x2={x(d.day)} y2={y+13} stroke="#4CC9F0" strokeWidth="2"/>
-                <circle cx={x(d.day)} cy={y+7.5} r="3.5" fill="#4CC9F0"/>
+                <line x1={x(d.day)} y1={y+2} x2={x(d.day)} y2={y+14} stroke="var(--ion)" strokeWidth="2"/>
+                <circle cx={x(d.day)} cy={y+8} r="4"
+                        fill={d.confirmed ? 'var(--ion)' : 'var(--void)'}
+                        stroke="var(--ion)" strokeWidth="1.6"/>
               </g>
             ))}
             {a.orderDay !== null && a.orderDay > 0 && a.orderDay <= days && (
-              <polygon points={`${x(a.orderDay)},${y+1} ${x(a.orderDay)+5},${y+8} ${x(a.orderDay)},${y+15} ${x(a.orderDay)-5},${y+8}`}
-                       fill="#F2A33C"/>
+              <polygon points={`${x(a.orderDay)},${y+1} ${x(a.orderDay)+5},${y+8} ${x(a.orderDay)},${y+15} ${x(a.orderDay)-5},${y+8}`} fill="var(--gold)"/>
             )}
             {a.orderDay !== null && a.orderDay <= 0 && (
-              <polygon className="pulse" points={`${x(0)},${y+1} ${x(0)+5},${y+8} ${x(0)},${y+15} ${x(0)-5},${y+8}`} fill="#FF5470"/>
+              <polygon className="pulse" points={`${x(0)},${y+1} ${x(0)+5},${y+8} ${x(0)},${y+15} ${x(0)-5},${y+8}`} fill="var(--flare)"/>
             )}
           </g>
         );
@@ -427,67 +505,72 @@ function Horizon({ rows, today, onPick }){
 }
 
 /* ================= графік позиції ================= */
-function ItemChart({ a, today }){
+function ItemChart({ a, today, theme }){
   const W = 1200, H = 250, padL = 78, padR = 54, padT = 22, padB = 30;
   const iw = W-padL-padR, ih = H-padT-padB;
-  const days = Math.max(200, ...a.future.map(d => d.day + 40));
+  const days = Math.max(220, ...a.future.map(d => d.day + 45));
   const pts = [];
-  for (let d = 0; d <= days; d += 2) pts.push({d, s: a.stockAt(d)});
-  const vals = pts.map(p => p.s).concat([a.safetyUnits, a.overUnits, 0]);
+  for (let d = 0; d <= days; d += 2) pts.push({d, s:a.stockAt(d)});
+  const vals = pts.map(p => p.s).concat([a.safety, a.over, 0]);
   const yMax = Math.max(...vals) * 1.12 || 1;
-  const yMin = Math.min(...vals, 0) * 1.12;
+  const yMin = Math.min(...vals, 0) * 1.15;
   const X = d => padL + (d/days)*iw;
   const Y = s => padT + ih - ((s - yMin)/((yMax-yMin)||1))*ih;
   const path = pts.map((p,i) => `${i?'L':'M'} ${X(p.d).toFixed(1)},${Y(p.s).toFixed(1)}`).join(' ');
-  const area = `${path} L ${X(days)},${Y(yMin)} L ${padL},${Y(yMin)} Z`;
-
-  const ticks = [];
-  for (let d = 0; d <= days; d += 30) ticks.push(d);
+  const axis = theme === 'light' ? '#61758F' : '#8AA2C0';
+  const ticks = []; for (let d = 0; d <= days; d += 30) ticks.push(d);
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:'auto'}}>
       <defs>
         <linearGradient id="fillG" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#4CC9F0" stopOpacity=".28"/>
-          <stop offset="100%" stopColor="#4CC9F0" stopOpacity="0"/>
+          <stop offset="0%" stopColor="var(--ion)" stopOpacity=".32"/>
+          <stop offset="100%" stopColor="var(--ion)" stopOpacity="0"/>
         </linearGradient>
       </defs>
       {ticks.map(d => (
         <g key={d}>
-          <line x1={X(d)} y1={padT} x2={X(d)} y2={H-padB} stroke="rgba(120,180,255,.07)"/>
-          <text x={X(d)} y={H-padB+16} fill="#4A5C77" fontSize="10" textAnchor="middle"
-                fontFamily="JetBrains Mono, monospace">{fmtD(addDays(today,d)).slice(0,5)}</text>
+          <line x1={X(d)} y1={padT} x2={X(d)} y2={H-padB} stroke="var(--line)" opacity=".5"/>
+          <text x={X(d)} y={H-padB+16} fill={axis} fontSize="10" textAnchor="middle" fontFamily="JetBrains Mono, monospace">
+            {fmtD(addDays(today,d)).slice(0,5)}
+          </text>
         </g>
       ))}
-      {a.overUnits > 0 && a.overUnits < yMax && (
-        <g><line x1={padL} y1={Y(a.overUnits)} x2={W-padR} y2={Y(a.overUnits)} stroke="#8B5CF6" strokeDasharray="6 5" strokeWidth="1.2"/>
-           <text x={padL-8} y={Y(a.overUnits)+4} fill="#8B5CF6" fontSize="10" textAnchor="end">оверсток</text></g>
+      {a.over > 0 && a.over < yMax && (
+        <g><line x1={padL} y1={Y(a.over)} x2={W-padR} y2={Y(a.over)} stroke="var(--violet)" strokeDasharray="6 5" strokeWidth="1.3"/>
+           <text x={padL-8} y={Y(a.over)+4} fill="var(--violet)" fontSize="10.5" textAnchor="end">оверсток</text></g>
       )}
-      {a.safetyUnits > 0 && (
-        <g><line x1={padL} y1={Y(a.safetyUnits)} x2={W-padR} y2={Y(a.safetyUnits)} stroke="#F2A33C" strokeDasharray="6 5" strokeWidth="1.2"/>
-           <text x={padL-8} y={Y(a.safetyUnits)+4} fill="#F2A33C" fontSize="10" textAnchor="end">мін. запас</text></g>
+      {a.safety > 0 && (
+        <g><line x1={padL} y1={Y(a.safety)} x2={W-padR} y2={Y(a.safety)} stroke="var(--gold)" strokeDasharray="6 5" strokeWidth="1.3"/>
+           <text x={padL-8} y={Y(a.safety)+4} fill="var(--gold)" fontSize="10.5" textAnchor="end">мін. запас</text></g>
       )}
-      <line x1={padL} y1={Y(0)} x2={W-padR} y2={Y(0)} stroke="#FF5470" strokeWidth="1.2" strokeDasharray="4 4"/>
-      <text x={padL-8} y={Y(0)+4} fill="#FF5470" fontSize="10" textAnchor="end">0</text>
+      <line x1={padL} y1={Y(0)} x2={W-padR} y2={Y(0)} stroke="var(--flare)" strokeWidth="1.3" strokeDasharray="4 4"/>
+      <text x={padL-8} y={Y(0)+4} fill="var(--flare)" fontSize="10.5" textAnchor="end">0</text>
 
-      <path d={area} fill="url(#fillG)"/>
-      <path d={path} fill="none" stroke="#4CC9F0" strokeWidth="2.4" strokeLinejoin="round"/>
+      {(a.gaps||[]).filter(g => g.from <= days).map((g,i) => (
+        <g key={'g'+i}>
+          <rect x={X(g.from)} y={padT} width={Math.max(2, X(Math.min(g.to+1, days)) - X(g.from))} height={ih}
+                fill="var(--flare)" opacity=".13"/>
+          <text x={X(g.from)+4} y={padT+13} fill="var(--flare)" fontSize="10.5" fontWeight="700">ринок ≈ {fmtN(g.qty)}</text>
+        </g>
+      ))}
+      <path d={`${path} L ${X(days)},${Y(yMin)} L ${padL},${Y(yMin)} Z`} fill="url(#fillG)"/>
+      <path d={path} fill="none" stroke="var(--ion)" strokeWidth="2.4" strokeLinejoin="round"/>
 
       {a.future.map(d => (
         <g key={d.n}>
-          <line x1={X(d.day)} y1={padT} x2={X(d.day)} y2={H-padB} stroke="rgba(76,201,240,.35)" strokeDasharray="3 4"/>
-          <circle cx={X(d.day)} cy={Y(a.stockAt(d.day))} r="5" fill="#3DDC97"/>
-          <text x={X(d.day)} y={Y(a.stockAt(d.day))-12} fill="#3DDC97" fontSize="11" textAnchor="middle"
-                fontFamily="JetBrains Mono, monospace">+{fmtN(d.qty)}</text>
+          <line x1={X(d.day)} y1={padT} x2={X(d.day)} y2={H-padB} stroke="var(--ion)" strokeDasharray="3 4" opacity=".45"/>
+          <circle cx={X(d.day)} cy={Y(a.stockAt(d.day))} r="5" fill={d.confirmed?'var(--jade)':'var(--void)'} stroke="var(--jade)" strokeWidth="2"/>
+          <text x={X(d.day)} y={Y(a.stockAt(d.day))-13} fill="var(--jade)" fontSize="11" textAnchor="middle" fontFamily="JetBrains Mono, monospace">
+            +{fmtN(d.qty)}
+          </text>
         </g>
       ))}
       {a.orderDay !== null && a.orderDay >= 0 && a.orderDay <= days && (
-        <g>
-          <line x1={X(a.orderDay)} y1={padT} x2={X(a.orderDay)} y2={H-padB} stroke="#F2A33C" strokeWidth="1.6"/>
-          <text x={X(a.orderDay)+6} y={padT+12} fill="#F2A33C" fontSize="11" fontWeight="700">замовити</text>
-        </g>
+        <g><line x1={X(a.orderDay)} y1={padT} x2={X(a.orderDay)} y2={H-padB} stroke="var(--gold)" strokeWidth="1.8"/>
+           <text x={X(a.orderDay)+6} y={padT+12} fill="var(--gold)" fontSize="11" fontWeight="700">замовити</text></g>
       )}
-      <circle cx={X(0)} cy={Y(a.stockNow)} r="5" fill="#4CC9F0"/>
+      <circle cx={X(0)} cy={Y(a.stockNow)} r="5" fill="var(--ion)"/>
     </svg>
   );
 }
@@ -497,18 +580,20 @@ function Slot({ n, item, a, onChange }){
   const s = a.slots[n];
   const send = item['d'+n+'Send'], arrive = item['d'+n+'Date'];
   const qty = item['d'+n+'Qty'], cont = item['d'+n+'Cont'];
+  const stage = item['d'+n+'Stage'] || '', pay = item['d'+n+'Pay'] || '';
   const live = num(qty) > 0 || !!arrive || !!send;
-  let transit = null;
   const sd = parseISO(send), ad = parseISO(arrive);
-  if (sd && ad) transit = dayDiff(sd, ad);
+  const transit = (sd && ad) ? dayDiff(sd, ad) : null;
+  const cur = stageIdx(stage);
 
   return (
     <div className={`pad cell slot ${live?'live':''}`}>
       <div className="slot-h">
         <span className="slot-n">Поставка {n}</span>
-        <input className="txt-in" style={{width:'110px'}} value={cont||''} placeholder="контейнер"
+        <input className="txt-in" style={{width:'118px'}} value={cont||''} placeholder="контейнер"
                onChange={e => onChange(`d${n}Cont`, e.target.value)}/>
       </div>
+
       <div className="route">
         <div>
           <span className="lab">Відправка</span>
@@ -520,31 +605,57 @@ function Slot({ n, item, a, onChange }){
           <input type="date" className="date-in" value={arrive||''} onChange={e => onChange(`d${n}Date`, e.target.value)}/>
         </div>
       </div>
+
       <div>
         <span className="lab">Кількість, шт</span>
         <input type="number" className="num-in" value={qty===0?'':qty} placeholder="0"
                onChange={e => onChange(`d${n}Qty`, e.target.value)}/>
       </div>
+
+      <div className="pipe no-print">
+        {STAGES.map((st, i) => (
+          <button key={st.k} title={st.t}
+                  className={(cur >= 0 && i <= cur ? 'on ' : '') + (st.k==='done' && cur===i ? 'done ' : '') + (i===cur ? 'cur' : '')}
+                  onClick={() => onChange(`d${n}Stage`, stage === st.k ? '' : st.k)}>
+            <span>{st.s}</span>
+          </button>
+        ))}
+      </div>
+      <div className="stage-now">
+        <b>{cur >= 0 ? STAGES[cur].t : 'Етап не вказано'}</b>
+        <span className="pays no-print">
+          {PAYS.map(p => (
+            <button key={p.k} title={p.full} className={pay === p.k ? 'on' : ''}
+                    onClick={() => onChange(`d${n}Pay`, p.k)}>{p.t}</button>
+          ))}
+        </span>
+      </div>
+
       <div className="proj">
         {!s ? <><span>Порожній слот</span><b>—</b></> :
-         s.arrived ? <><span>Прибула</span><b className="pos">враховано в залишку</b></> :
+         s.received ? <><span>Прийнято на склад</span><b className="pos">у залишку</b></> :
+         s.arrived ? <><span>Дата минула</span><b className="neg">підтвердіть приймання</b></> :
          <>
-           <span>За день до приходу</span><b className={s.before < 0 ? 'neg' : ''}>{fmtN(s.before)}</b>
-           <span>Після приходу</span><b className="pos">{fmtN(s.after)}</b>
+           <span>Запас перед приходом</span><b className={s.gapQty > 0 ? 'neg' : ''}>{fmtN(s.before)}</b>
+           <span>Після приходу</span><b className="pos">{fmtN(s.after)} · {fmtM(s.coversTo)} міс</b>
          </>}
       </div>
+      {s && !s.received && !s.arrived && s.gapQty > 0 && (
+        <div className="short">
+          Свій запас закінчиться {fmtD(s.gapFrom)}. До приходу {s.gapDays} дн на закупівлі з внутрішнього ринку — приблизно {fmtN(s.gapQty)} шт.
+        </div>
+      )}
     </div>
   );
 }
 
 /* ================= картка ================= */
-function Card({ item, a, index, onChange, onRemove, chart, ai, onChart, onAi, aiText, aiBusy }){
-  const gateCls = a.state==='now' ? 'g-now' : a.state==='soon' ? 'g-soon' : a.state==='idle' ? 'g-idle' : 'g-ok';
-  const rimCls = a.state==='now' ? 'rim rim-now' : a.state==='soon' ? 'rim rim-soon' : 'rim';
-
+function Card({ item, a, index, theme, onChange, onRemove, chart, ai, onChart, onAi, aiText, aiBusy }){
+  const g = a.state==='now' ? 'g-now' : a.state==='soon' ? 'g-soon' : a.state==='idle' ? 'g-idle' : 'g-ok';
+  const rim = a.state==='now' ? 'rim rim-now' : a.state==='soon' ? 'rim rim-soon' : 'rim';
   return (
     <div className="panel card" id={'item-'+item.id}>
-      <div className={rimCls}></div>
+      <div className={rim}></div>
       <div className="card-grid">
         <div className="pad">
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
@@ -564,15 +675,18 @@ function Card({ item, a, index, onChange, onRemove, chart, ai, onChart, onAi, ai
           </div>
           <div className="real">
             Розрахунок на сьогодні: <b style={{color:a.stockNow<0?'var(--flare)':'var(--ion)'}}>{fmtN(a.stockNow)} шт</b>
-            {a.aged > 0 && <> · списано {a.aged} дн × {fmtN(a.daily)} шт</>}
-            <br/>
+            {a.aged > 0 && <> · списано {a.aged} дн</>}<br/>
             Покриття: <b>{fmtM(a.covNow)} міс</b>
-            {a.outDate && <> · нуль {fmtD(a.outDate)}</>}
+            {!a.zeroDate && a.coverDate && <> · запасу до {fmtD(a.coverDate)}</>}
+            {a.firstGap && (
+              <><br/>Свій запас закінчується <b style={{color:'var(--flare)'}}>{fmtD(a.zeroDate)}</b>
+                {a.zeroEndDate ? <> — поставка {fmtD(addDays(a.zeroEndDate,1))}</> : <> — поставки в горизонті немає</>}
+                <br/>Закупівля на ринку: <b style={{color:'var(--gold)'}}>≈ {fmtN(a.firstGap.qty)} шт</b> за {a.firstGap.to - a.firstGap.from + 1} дн
+              </>
+            )}
           </div>
           {a.flags.length > 0 && (
-            <div className="flags">
-              {a.flags.map((f,i) => <span key={i} className={'flag'+(f.bad?' bad':'')}>{f.t}</span>)}
-            </div>
+            <div className="flags">{a.flags.map((f,i) => <span key={i} className={'flag'+(f.bad?' bad':'')}>{f.t}</span>)}</div>
           )}
           <div className="flags no-print" style={{marginTop:14}}>
             <button className="btn btn-sm" onClick={onChart}>{chart?'Згорнути графік':'Графік'}</button>
@@ -582,14 +696,16 @@ function Card({ item, a, index, onChange, onRemove, chart, ai, onChart, onAi, ai
 
         <div className="pad cell gate">
           <span className="cap">Замовити до</span>
-          <span className={'when '+gateCls}>
-            {a.state==='idle' ? '—' : a.orderDate ? (a.orderDay <= 0 ? 'ВЖЕ' : fmtD(a.orderDate)) : 'не треба'}
+          <span className={'when '+g}>
+            {a.state==='idle' ? '—' : a.beyond ? 'не треба' : a.orderDate ? (a.orderDay <= 0 ? 'ВЖЕ' : fmtD(a.orderDate)) : '—'}
           </span>
           <span className="sub">
             {a.state==='idle' ? 'немає витрати' :
-             a.orderDay === null ? 'запасу вистачає' :
+             a.beyond ? 'вистачає за горизонтом' :
+             a.orderDay === null ? '' :
              a.orderDay <= 0 ? `прострочено на ${-a.orderDay} дн` : `через ${a.orderDay} дн`}
           </span>
+          {a.coverDate && <span className="sub" style={{marginTop:6}}>запас тримається<br/>до {fmtD(a.coverDate)}</span>}
         </div>
 
         <Slot n={1} item={item} a={a} onChange={onChange}/>
@@ -597,7 +713,7 @@ function Card({ item, a, index, onChange, onRemove, chart, ai, onChart, onAi, ai
         <Slot n={3} item={item} a={a} onChange={onChange}/>
       </div>
 
-      {chart && <div className="drawer"><ItemChart a={a} today={midnight(new Date())}/></div>}
+      {chart && <div className="drawer"><ItemChart a={a} today={midnight(new Date())} theme={theme}/></div>}
       {ai && (
         <div className="drawer">
           <div className="eyebrow" style={{marginBottom:12}}>Оцінка ризиків</div>
@@ -629,18 +745,19 @@ function App(){
   const [today, setToday] = useState(() => midnight(new Date()));
 
   const [cfg, setCfg] = useState(() => Object.assign({
-    url:'', token:'', user:'', apiKey:'',
+    url:'', token:'', user:'', apiKey:'', theme:'dark',
     order:20, sea:60, port:30, minStock:1.5, overStock:5,
     stockDate: toISO(midnight(new Date()))
-  }, store.get('mrp_cfg_v2', {})));
+  }, store.get('mrp_cfg_v3', store.get('mrp_cfg_v2', {}))));
 
-  useEffect(() => { store.set('mrp_cfg_v2', cfg); }, [cfg]);
+  useEffect(() => { store.set('mrp_cfg_v3', cfg); }, [cfg]);
+  useEffect(() => { document.documentElement.setAttribute('data-theme', cfg.theme || 'dark'); }, [cfg.theme]);
   useEffect(() => {
-    const t = setInterval(() => setToday(midnight(new Date())), 60*60*1000);
+    const t = setInterval(() => setToday(midnight(new Date())), 3600000);
     return () => clearInterval(t);
   }, []);
   useEffect(() => {
-    const warn = e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } };
+    const warn = e => { if (dirty){ e.preventDefault(); e.returnValue = ''; } };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
   }, [dirty]);
@@ -649,13 +766,11 @@ function App(){
   const say = (text, err) => { setToast({text, err}); setTimeout(() => setToast(null), 5000); };
   const leadTime = num(cfg.order) + num(cfg.sea) + num(cfg.port);
 
-  /* ---- API ---- */
   const call = async payload => {
-    if (!cfg.url) throw new Error('Не вказано адресу скрипта');
-    if (!cfg.token) throw new Error('Не вказано токен доступу');
+    if (!cfg.url) throw new Error('не вказано адресу скрипта');
+    if (!cfg.token) throw new Error('не вказано токен доступу');
     const res = await fetch(cfg.url, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
       body: JSON.stringify(Object.assign({ token: cfg.token.trim(), user: cfg.user || 'без імені' }, payload))
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -669,14 +784,17 @@ function App(){
       const r = await call({ action:'load' });
       if (r.status !== 'success') throw new Error(r.error || r.code);
       setItems((r.rows||[]).filter(row => String(row[0]||'').trim()).map(row => ({
-        id: (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'i'+Math.random().toString(36).slice(2),
+        id:(self.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'i'+Math.random().toString(36).slice(2),
         name:String(row[0]).trim(), stock:num(row[1]), consumption:num(row[2]),
         d1Send:row[3]||'', d1Date:row[4]||'', d1Qty:num(row[5]), d1Cont:String(row[6]||''),
         d2Send:row[7]||'', d2Date:row[8]||'', d2Qty:num(row[9]), d2Cont:String(row[10]||''),
-        d3Send:row[11]||'', d3Date:row[12]||'', d3Qty:num(row[13]), d3Cont:String(row[14]||'')
+        d3Send:row[11]||'', d3Date:row[12]||'', d3Qty:num(row[13]), d3Cont:String(row[14]||''),
+        d1Stage:String(row[15]||''), d1Pay:String(row[16]||''),
+        d2Stage:String(row[17]||''), d2Pay:String(row[18]||''),
+        d3Stage:String(row[19]||''), d3Pay:String(row[20]||'')
       })));
       setRevision(r.revision);
-      setMeta({ at:new Date(), by:r.lastSavedBy, when:r.lastSavedAt });
+      setMeta({ at:new Date(), by:r.lastSavedBy });
       setDirty(false);
       if (r.stockLabel){
         const m = String(r.stockLabel).match(/(\d{2})\.(\d{2})\.(\d{4})/);
@@ -694,7 +812,8 @@ function App(){
         i.name, i.stock, i.consumption,
         i.d1Send, i.d1Date, i.d1Qty, i.d1Cont||'',
         i.d2Send, i.d2Date, i.d2Qty, i.d2Cont||'',
-        i.d3Send, i.d3Date, i.d3Qty, i.d3Cont||''
+        i.d3Send, i.d3Date, i.d3Qty, i.d3Cont||'',
+        i.d1Stage||'', i.d1Pay||'', i.d2Stage||'', i.d2Pay||'', i.d3Stage||'', i.d3Pay||''
       ]);
       const r = await call(Object.assign({ action:'save', rows, revision }, opts));
       if (r.code === 'conflict'){
@@ -715,7 +834,6 @@ function App(){
     finally{ setSaving(false); }
   };
 
-  /* ---- редагування ---- */
   const change = (id, field, value) => {
     setItems(prev => prev.map(i => i.id === id ? Object.assign({}, i, {[field]:value}) : i));
     setDirty(true);
@@ -724,7 +842,9 @@ function App(){
   const addItem = () => {
     setItems(prev => [{
       id:'n'+Date.now(), name:'Нова позиція', stock:0, consumption:0,
-      d1Send:'',d1Date:'',d1Qty:0,d1Cont:'', d2Send:'',d2Date:'',d2Qty:0,d2Cont:'', d3Send:'',d3Date:'',d3Qty:0,d3Cont:''
+      d1Send:'',d1Date:'',d1Qty:0,d1Cont:'',d1Stage:'',d1Pay:'',
+      d2Send:'',d2Date:'',d2Qty:0,d2Cont:'',d2Stage:'',d2Pay:'',
+      d3Send:'',d3Date:'',d3Qty:0,d3Cont:'',d3Stage:'',d3Pay:''
     }, ...prev]);
     setDirty(true);
   };
@@ -734,7 +854,6 @@ function App(){
     setDirty(true);
   };
 
-  /* ---- аналітика ---- */
   const ctx = useMemo(() => ({
     today, stockDate: parseISO(cfg.stockDate) || today,
     leadTime, minStock: cfg.minStock, overStock: cfg.overStock
@@ -747,8 +866,10 @@ function App(){
     if (q.trim()) r = r.filter(x => x.item.name.toLowerCase().includes(q.trim().toLowerCase()));
     if (filter === 'now')   r = r.filter(x => x.a.state === 'now');
     if (filter === 'risk')  r = r.filter(x => x.a.state === 'now' || x.a.state === 'soon');
-    if (filter === 'flags') r = r.filter(x => x.a.flags.length > 0);
+    if (filter === 'zero')  r = r.filter(x => x.a.firstZero !== null);
     if (filter === 'over')  r = r.filter(x => x.a.state === 'over');
+    if (filter === 'flags') r = r.filter(x => x.a.flags.length > 0);
+    if (filter === 'unpaid') r = r.filter(x => x.a.dels.some(d => d.qty>0 && d.stage && d.stage!=='done' && !d.pay));
     const key = x => x.a.orderDay === null ? 99999 : x.a.orderDay;
     if (sort === 'urgency') r.sort((x,y) => key(x) - key(y));
     if (sort === 'cover')   r.sort((x,y) => (x.a.covNow===Infinity?9e9:x.a.covNow) - (y.a.covNow===Infinity?9e9:y.a.covNow));
@@ -760,16 +881,19 @@ function App(){
     total: rows.length,
     now: rows.filter(r => r.a.state === 'now').length,
     soon: rows.filter(r => r.a.state === 'soon').length,
-    transit: rows.reduce((s,r) => s + r.a.future.length, 0),
+    gaps: rows.filter(r => r.a.firstGap).length,
+    transit: rows.reduce((s,r) => s + r.a.future.filter(d => d.confirmed).length, 0),
+    planned: rows.reduce((s,r) => s + r.a.future.filter(d => !d.confirmed).length, 0),
+    unpaid: rows.reduce((s,r) => s + r.a.dels.filter(d => d.qty>0 && d.stage && d.stage!=='done' && !d.pay).length, 0),
     flags: rows.filter(r => r.a.flags.length > 0).length
   }), [rows]);
 
   const stale = Math.max(0, dayDiff(parseISO(cfg.stockDate) || today, today));
 
-  /* ---- AI ---- */
   const runAi = async (item, a) => {
-    setAiOpen(p => Object.assign({}, p, {[item.id]: !p[item.id]}));
-    if (aiText[item.id] || aiOpen[item.id]) return;
+    const open = !aiOpen[item.id];
+    setAiOpen(p => Object.assign({}, p, {[item.id]: open}));
+    if (!open || aiText[item.id]) return;
     if (!cfg.apiKey){ setAiText(p => Object.assign({}, p, {[item.id]:'Додайте ключ Gemini у налаштуваннях, щоб отримати оцінку ризиків.'})); return; }
     setAiBusy(p => Object.assign({}, p, {[item.id]:true}));
     try{
@@ -783,23 +907,30 @@ function App(){
       const model = names.find(n => n.includes('flash') && !n.includes('preview') && !n.includes('exp')) || names.find(n => n.includes('flash')) || names[0];
       if (!model) throw new Error('немає доступних моделей');
 
+      const stages = a.dels.filter(d => d.qty > 0).map(d => {
+        const st = stageIdx(d.stage) >= 0 ? STAGES[stageIdx(d.stage)].t : 'етап не вказано';
+        const pay = (PAYS.find(p => p.k === d.pay) || PAYS[0]).full;
+        return `поставка ${d.n}: ${fmtN(d.qty)} шт, прибуття ${fmtD(d.arrive)}, ${st}, ${pay}`;
+      }).join('; ') || 'немає';
+
       const prompt = `Ти — керівник ланцюга постачань. Товар іде з Китаю морем.
-Дата розрахунку: ${fmtD(today)}. Логістичне плече: ${leadTime} дн (замовлення ${cfg.order} + море ${cfg.sea} + порт/митниця ${cfg.port}).
-Політика запасів: мінімум ${cfg.minStock} міс, оверсток ${cfg.overStock} міс.
+Дата розрахунку: ${fmtD(today)}. Плече: ${leadTime} дн (замовлення ${cfg.order} + море ${cfg.sea} + порт ${cfg.port}).
+Політика: мінімум ${cfg.minStock} міс, оверсток ${cfg.overStock} міс.
 
-Позиція: "${item.name}"
-- залишок у таблиці на ${fmtD(parseISO(cfg.stockDate))}: ${fmtN(a.entered)} шт
-- розрахунковий залишок сьогодні: ${fmtN(a.stockNow)} шт (покриття ${fmtM(a.covNow)} міс)
+Позиція "${item.name}"
+- розрахунковий залишок сьогодні: ${fmtN(a.stockNow)} шт (${fmtM(a.covNow)} міс)
 - витрата: ${fmtN(a.monthly)} шт/міс
-- вихід у нуль: ${a.outDate ? fmtD(a.outDate) : 'поза горизонтом'}
+- свій запас закінчується: ${a.zeroDate ? fmtD(a.zeroDate) : 'немає розриву в горизонті'}${a.firstGap ? `, розрив ${a.firstGap.to - a.firstGap.from + 1} дн, добір на внутрішньому ринку ≈ ${fmtN(a.firstGap.qty)} шт` : ''}
+- запасу вистачає до: ${a.coverDate ? fmtD(a.coverDate) : 'за горизонтом'}
 - розрахункова дата замовлення: ${a.orderDate ? fmtD(a.orderDate) : 'не потрібно'}
-- поставки в дорозі: ${a.future.length ? a.future.map(d => `${fmtN(d.qty)} шт на ${fmtD(d.arrive)}`).join('; ') : 'немає'}
+- статуси поставок: ${stages}
 
-Дай коротко (до 200 слів), українською:
-1. Чи погоджуєшся з розрахунковою датою замовлення і чому.
-2. Які події на плечі ${leadTime} днів можуть зсунути строки: свята в Китаї, пік сезону, ставки фрахту, порт, митниця, безпекова ситуація в Україні.
-3. Рекомендований запас часу понад розрахунок.
-4. Одна конкретна дія на цей тиждень.
+Коротко (до 200 слів), українською:
+1. Чи згоден з датою замовлення і чому.
+2. Що на плечі ${leadTime} днів може зсунути строки: свята в Китаї, пік сезону, фрахт, порт, митниця, безпекова ситуація.
+3. Чи бачиш ризик у поточних етапах і оплатах поставок. Врахуй: при розриві виробництво не зупиняється — сировину добирають на внутрішньому ринку України, тому питання не в простої, а в ціні, якості та наявності аналога.
+4. Чи виправдано пришвидшити поставку замість закупівлі на ринку.
+5. Одна конкретна дія на цей тиждень.
 Без вступів і без переліку вхідних даних.`;
 
       const rr = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,{
@@ -812,26 +943,31 @@ function App(){
       if (!txt) throw new Error('порожня відповідь');
       setAiText(p => Object.assign({}, p, {[item.id]: txt}));
     }catch(e){
-      setAiText(p => Object.assign({}, p, {[item.id]: 'Оцінку не отримано: ' + e.message}));
+      setAiText(p => Object.assign({}, p, {[item.id]:'Оцінку не отримано: ' + e.message}));
     }finally{
       setAiBusy(p => Object.assign({}, p, {[item.id]:false}));
     }
   };
 
-  /* ---- PDF ---- */
   const exportPdf = () => {
     const el = document.getElementById('deck');
     if (!el) return;
-    document.body.classList.add('export-light');
-    html2pdf().set({
-      margin:[6,6,6,6],
-      filename:`mrp_${toISO(today)}.pdf`,
-      image:{type:'jpeg',quality:.95},
-      html2canvas:{scale:1.4,useCORS:true,backgroundColor:'#ffffff'},
-      jsPDF:{unit:'mm',format:'a3',orientation:'landscape'}
-    }).from(el).save()
-      .catch(() => say('PDF не сформовано', true))
-      .finally(() => document.body.classList.remove('export-light'));
+    const prev = cfg.theme;
+    document.documentElement.setAttribute('data-theme','light');
+    document.body.classList.add('printing');
+    setTimeout(() => {
+      html2pdf().set({
+        margin:[6,6,6,6], filename:`mrp_${toISO(today)}.pdf`,
+        image:{type:'jpeg',quality:.95},
+        html2canvas:{scale:1.4,useCORS:true,backgroundColor:'#ffffff'},
+        jsPDF:{unit:'mm',format:'a3',orientation:'landscape'}
+      }).from(el).save()
+        .catch(() => say('PDF не сформовано', true))
+        .finally(() => {
+          document.body.classList.remove('printing');
+          document.documentElement.setAttribute('data-theme', prev);
+        });
+    }, 60);
   };
 
   const jump = id => {
@@ -840,7 +976,8 @@ function App(){
     if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
   };
 
-  /* ---- рендер ---- */
+  const theme = cfg.theme || 'dark';
+
   return (
     <>
       <div className="hud no-print">
@@ -850,14 +987,16 @@ function App(){
         </div>
         <div className="hud-tel">
           <div className="tel">Сьогодні<b className="mono">{fmtD(today)}</b></div>
-          <div className="tel">Залишок актуальний на
-            <b className={'mono '+(stale>14?'warn':'')}>{fmtD(parseISO(cfg.stockDate))}{stale>0?` · ${stale} дн тому`:''}</b>
-          </div>
+          <div className="tel">Залишок на<b className={'mono '+(stale>14?'warn':'')}>{fmtD(parseISO(cfg.stockDate))}{stale>0?` · ${stale} дн тому`:''}</b></div>
           <div className="tel">Плече<b className="mono">{leadTime} дн</b></div>
           <div className="tel">Синхронізація<b className="mono">{meta.at ? meta.at.toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}) : '—'}{revision?` · rev ${revision}`:''}</b></div>
           {dirty && <div className="tel">Стан<b className="warn">є незбережені зміни</b></div>}
         </div>
         <div className="hud-act">
+          <button className="btn btn-ic" title={theme==='dark'?'Світла тема':'Темна тема'}
+                  onClick={() => setCfg(Object.assign({}, cfg, {theme: theme==='dark'?'light':'dark'}))}>
+            {theme==='dark' ? '☀' : '☾'}
+          </button>
           <button className="btn" onClick={() => load(false)} disabled={busy}>{busy?'Читаю…':'Синхронізувати'}</button>
           <button className="btn btn-key" onClick={() => save()} disabled={saving || !items.length}>{saving?'Пишу…':'Зберегти'}</button>
           <button className="btn" onClick={addItem}>+ Позиція</button>
@@ -873,7 +1012,7 @@ function App(){
             <h3>Google Apps Script</h3>
             <label className="lab">Адреса скрипта (/exec)</label>
             <input className="field mono" style={{width:'100%'}} value={cfg.url}
-                   onChange={e => setCfg(Object.assign({}, cfg, {url:e.target.value}))} placeholder="https://script.google.com/macros/s/…/exec"/>
+                   onChange={e => setCfg(Object.assign({}, cfg, {url:e.target.value}))}/>
             <div className="grid3" style={{marginTop:12}}>
               <div>
                 <label className="lab">Токен доступу</label>
@@ -886,20 +1025,20 @@ function App(){
                        onChange={e => setCfg(Object.assign({}, cfg, {user:e.target.value}))} placeholder="Юрій"/>
               </div>
             </div>
-            <p className="hint">Токен зберігається лише у цьому браузері й не потрапляє в репозиторій. Отримати: у редакторі скрипта запустіть setup() і скопіюйте значення з журналу виконання.</p>
+            <p className="hint">Токен зберігається лише у цьому браузері. Отримати: у редакторі скрипта запустити setup() і скопіювати значення з журналу виконання.</p>
 
             <h3>Актуальність залишку</h3>
             <label className="lab">Залишок у таблиці станом на</label>
             <input type="date" className="field mono" value={cfg.stockDate}
                    onChange={e => setCfg(Object.assign({}, cfg, {stockDate:e.target.value}))}/>
-            <p className="hint">Від цієї дати списується витрата до сьогодні. Якщо колонка B заповнена станом на 02.06, а сьогодні серпень — без цієї дати всі покриття завищені на два місяці.</p>
+            <p className="hint">Від цієї дати списується витрата до сьогодні. Підтягується з тексту в комірці B2, якщо там є дата.</p>
 
             <h3>Логістичне плече, дні</h3>
             <div className="grid3">
               {[['order','Розміщення замовлення'],['sea','Море'],['port','Порт і митниця']].map(([k,l]) => (
                 <div key={k}>
                   <label className="lab">{l}</label>
-                  <input type="number" className="field mono" style={{width:'100%'}} value={cfg[k]}
+                  <input inputMode="decimal" className="field mono" style={{width:'100%'}} value={cfg[k]}
                          onChange={e => setCfg(Object.assign({}, cfg, {[k]:e.target.value}))}/>
                 </div>
               ))}
@@ -910,21 +1049,22 @@ function App(){
             <div className="grid3">
               <div>
                 <label className="lab">Мінімальний запас</label>
-                <input type="number" step="0.1" className="field mono" style={{width:'100%'}} value={cfg.minStock}
+                <input inputMode="decimal" className="field mono" style={{width:'100%'}} value={cfg.minStock}
                        onChange={e => setCfg(Object.assign({}, cfg, {minStock:e.target.value}))}/>
               </div>
               <div>
                 <label className="lab">Оверсток</label>
-                <input type="number" step="0.1" className="field mono" style={{width:'100%'}} value={cfg.overStock}
+                <input inputMode="decimal" className="field mono" style={{width:'100%'}} value={cfg.overStock}
                        onChange={e => setCfg(Object.assign({}, cfg, {overStock:e.target.value}))}/>
               </div>
             </div>
+            <p className="hint">Кома і крапка обидві приймаються.</p>
 
             <h3>Оцінка ризиків</h3>
             <label className="lab">Ключ Gemini</label>
             <input type="password" className="field mono" style={{width:'100%'}} value={cfg.apiKey}
                    onChange={e => setCfg(Object.assign({}, cfg, {apiKey:e.target.value}))} placeholder="AIzaSy…"/>
-            <p className="hint">Необов'язково. Без ключа працює вся математика, не працює лише текстова оцінка ризиків.</p>
+            <p className="hint">Необов'язково. Без ключа працює вся математика, не працює лише текстова оцінка.</p>
           </div>
         </div>
       ) : (
@@ -932,7 +1072,7 @@ function App(){
           {!cfg.url || !cfg.token ? (
             <div className="panel empty">
               <h2>Підключіть таблицю</h2>
-              <p>Вкажіть адресу скрипта і токен доступу в налаштуваннях — далі палуба заповниться сама.</p>
+              <p>Вкажіть адресу скрипта і токен доступу в налаштуваннях.</p>
               <button className="btn btn-key" style={{marginTop:14}} onClick={() => setTab('cfg')}>Відкрити налаштування</button>
             </div>
           ) : (
@@ -941,13 +1081,14 @@ function App(){
               <div className="panel horizon">
                 <div className="scan"><i></i></div>
                 <div className="eyebrow">Горизонт постачання · 12 місяців</div>
-                <Horizon rows={view.length?view:rows} today={today} onPick={jump}/>
+                <Horizon rows={view.length?view:rows} today={today} onPick={jump} theme={theme}/>
                 <div className="legend">
-                  <span><i style={{background:'rgba(61,220,151,.6)'}}></i>вище мінімуму</span>
-                  <span><i style={{background:'rgba(242,163,60,.8)'}}></i>нижче мінімуму</span>
-                  <span><i style={{background:'rgba(255,84,112,.9)'}}></i>нуль</span>
-                  <span><i style={{background:'#4CC9F0'}}></i>прихід контейнера</span>
-                  <span><i style={{background:'#F2A33C',transform:'rotate(45deg)',width:9,height:9}}></i>дата замовлення</span>
+                  <span><i style={{background:'var(--jade)'}}></i>вище мінімуму</span>
+                  <span><i style={{background:'var(--gold)'}}></i>нижче мінімуму</span>
+                  <span><i style={{background:'var(--flare)'}}></i>нуль — закупівля на ринку</span>
+                  <span><i style={{background:'var(--ion)',borderRadius:'50%',width:9,height:9}}></i>відвантажено</span>
+                  <span><i style={{border:'2px solid var(--ion)',background:'transparent',borderRadius:'50%',width:9,height:9}}></i>ще не в дорозі</span>
+                  <span><i style={{background:'var(--gold)',transform:'rotate(45deg)',width:9,height:9}}></i>дата замовлення</span>
                 </div>
               </div>
             )}
@@ -956,7 +1097,9 @@ function App(){
               <div className="panel tile"><div className="k">Позицій</div><div className="v v-ion">{stat.total}</div><div className="s">під контролем</div></div>
               <div className="panel tile"><div className="k">Замовляти зараз</div><div className="v v-now">{stat.now}</div><div className="s">дата замовлення минула</div></div>
               <div className="panel tile"><div className="k">Ризик ≤ 30 днів</div><div className="v v-soon">{stat.soon}</div><div className="s">готувати заявку</div></div>
-              <div className="panel tile"><div className="k">Контейнерів у дорозі</div><div className="v v-ion">{stat.transit}</div><div className="s">очікується</div></div>
+              <div className="panel tile"><div className="k">Відвантажено</div><div className="v v-ion">{stat.transit}</div><div className="s">+{stat.planned} ще не в дорозі</div></div>
+              <div className="panel tile"><div className="k">Купувати на ринку</div><div className="v" style={{color:stat.gaps?'var(--flare)':'var(--dim)'}}>{stat.gaps}</div><div className="s">позицій із розривом</div></div>
+              <div className="panel tile"><div className="k">Без оплати</div><div className="v" style={{color:stat.unpaid?'var(--gold)':'var(--dim)'}}>{stat.unpaid}</div><div className="s">замовлень не оплачено</div></div>
               <div className="panel tile"><div className="k">Питання до даних</div><div className="v" style={{color:stat.flags?'var(--gold)':'var(--dim)'}}>{stat.flags}</div><div className="s">перевірити рядки</div></div>
             </div>
 
@@ -966,6 +1109,8 @@ function App(){
                 <option value="all">Усі позиції</option>
                 <option value="now">Замовляти зараз</option>
                 <option value="risk">Ризик ≤ 30 днів</option>
+                <option value="zero">Потрібна закупівля на ринку</option>
+                <option value="unpaid">Не оплачені</option>
                 <option value="over">Оверсток</option>
                 <option value="flags">Питання до даних</option>
               </select>
@@ -975,17 +1120,13 @@ function App(){
                 <option value="name">За назвою</option>
                 <option value="sheet">Як у таблиці</option>
               </select>
-              {stale > 14 && (
-                <span className="flag" style={{padding:'7px 12px'}}>
-                  Залишок старший за {stale} дн — оновіть колонку B або дату в налаштуваннях
-                </span>
-              )}
+              {stale > 14 && <span className="flag" style={{padding:'7px 12px'}}>Залишок старший за {stale} дн</span>}
             </div>
 
             {busy && !rows.length ? <div className="panel empty">Читаю таблицю…</div> :
              !view.length ? <div className="panel empty"><h2>Нічого не знайдено</h2><p>Змініть фільтр або пошуковий запит.</p></div> :
-             view.map((r, i) => (
-               <Card key={r.item.id} item={r.item} a={r.a} index={i}
+             view.map((r,i) => (
+               <Card key={r.item.id} item={r.item} a={r.a} index={i} theme={theme}
                      onChange={(f,v) => change(r.item.id, f, v)}
                      onRemove={() => removeItem(r.item.id, r.item.name)}
                      chart={!!chartOpen[r.item.id]} ai={!!aiOpen[r.item.id]}
