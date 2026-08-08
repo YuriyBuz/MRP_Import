@@ -816,7 +816,8 @@ function App(){
         d3Stage:stageFromCell(row[19]), d3Pay:payFromCell(row[20])
       })));
       setRevision(r.revision);
-      setMeta({ at:new Date(), by:r.lastSavedBy });
+      setMeta({ at:new Date(), by:r.lastSavedBy, file:r.spreadsheet,
+                schemaOk: r.schemaOk !== false, schemaProblem: r.schemaProblem || '' });
       setDirty(false);
       if (r.stockLabel){
         const m = String(r.stockLabel).match(/(\d{2})\.(\d{2})\.(\d{4})/);
@@ -1012,6 +1013,7 @@ function App(){
           <div className="tel">Залишок на<b className={'mono '+(stale>14?'warn':'')}>{fmtD(parseISO(cfg.stockDate))}{stale>0?` · ${stale} дн тому`:''}</b></div>
           <div className="tel">Плече<b className="mono">{leadTime} дн</b></div>
           <div className="tel">Синхронізація<b className="mono">{meta.at ? meta.at.toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}) : '—'}{revision?` · rev ${revision}`:''}</b></div>
+          {meta.file && <div className="tel">Файл<b>{meta.file}</b></div>}
           {dirty && <div className="tel">Стан<b className="warn">є незбережені зміни</b></div>}
         </div>
         <div className="hud-act">
@@ -1020,7 +1022,7 @@ function App(){
             {theme==='dark' ? '☀' : '☾'}
           </button>
           <button className="btn" onClick={() => load(false)} disabled={busy}>{busy?'Читаю…':'Синхронізувати'}</button>
-          <button className="btn btn-key" onClick={() => save()} disabled={saving || !items.length}>{saving?'Пишу…':'Зберегти'}</button>
+          <button className="btn btn-key" onClick={() => save()} disabled={saving || !items.length || meta.schemaOk === false}>{saving?'Пишу…':'Зберегти'}</button>
           <button className="btn" onClick={addItem}>+ Позиція</button>
           <button className="btn" onClick={exportPdf}>PDF</button>
           <button className="btn" onClick={() => setTab(tab==='cfg'?'deck':'cfg')}>{tab==='cfg'?'До палуби':'Налаштування'}</button>
@@ -1099,6 +1101,16 @@ function App(){
             </div>
           ) : (
           <>
+            {meta.schemaOk === false && (
+              <div className="panel pad" style={{marginBottom:18,borderColor:'var(--flare)'}}>
+                <div className="eyebrow" style={{color:'var(--flare)'}}>Структура таблиці не збігається</div>
+                <p style={{margin:'10px 0 0',color:'var(--flare)',fontSize:13,lineHeight:1.6}}>
+                  {meta.schemaProblem}<br/>
+                  Збереження заблоковано, щоб не зіпсувати дані. Перевірте, що скрипт вказує на правильний
+                  файл і що шапка таблиці має 21 колонку у форматі A–U.
+                </p>
+              </div>
+            )}
             {rows.length > 0 && (
               <div className="panel horizon">
                 <div className="scan"><i></i></div>
