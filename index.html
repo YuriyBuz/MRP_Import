@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRP · Foodline Supply Deck</title>
+
+<link rel="apple-touch-icon" href="https://foodline-production.com/wp-content/uploads/2021/10/3752781497_3752781497.webp">
+<meta name="theme-color" content="#04060D">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+<style>
+:root{
+  --void:#04060D; --deck:#090F1C; --hull:#0F1829; --hull2:#131F35;
+  --line:rgba(120,180,255,.13); --line2:rgba(120,180,255,.28);
+  --ion:#4CC9F0; --ion-deep:#1B6FFF;
+  --gold:#F2A33C; --flare:#FF5470; --jade:#3DDC97;
+  --ink:#E6F0FF; --mute:#7C8FAC; --dim:#4A5C77;
+  --glow:0 0 24px rgba(76,201,240,.25);
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--void); color:var(--ink);
+  font-family:'Exo 2',system-ui,sans-serif; font-size:14px;
+  background-image:
+    radial-gradient(1200px 600px at 50% -10%, rgba(27,111,255,.16), transparent 60%),
+    linear-gradient(transparent 95%, rgba(76,201,240,.045) 95%),
+    linear-gradient(90deg, transparent 95%, rgba(76,201,240,.045) 95%);
+  background-size:auto, 34px 34px, 34px 34px;
+  min-height:100vh; padding-bottom:60px;
+}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-variant-numeric:tabular-nums}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit}
+input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--ion);outline-offset:2px}
+
+/* ---------- HUD ---------- */
+.hud{
+  position:sticky;top:0;z-index:60;
+  background:linear-gradient(180deg,rgba(9,15,28,.97),rgba(9,15,28,.86));
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 1px 0 rgba(76,201,240,.16), 0 18px 40px -30px rgba(27,111,255,.9);
+  padding:12px 22px; display:flex; align-items:center; gap:22px; flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.brand img{height:26px;width:auto;filter:brightness(1.9) saturate(.2)}
+.wordmark{font-weight:800;font-size:17px;letter-spacing:.24em;text-transform:uppercase}
+.wordmark span{color:var(--ion)}
+.hud-tel{display:flex;gap:20px;flex:1;flex-wrap:wrap;font-size:11px;color:var(--mute)}
+.tel b{display:block;color:var(--ink);font-size:12.5px;letter-spacing:.04em;margin-top:2px}
+.tel .warn{color:var(--gold)}
+.hud-act{display:flex;gap:8px;flex-wrap:wrap}
+
+.btn{
+  border:1px solid var(--line2); background:rgba(19,31,53,.7); color:var(--ink);
+  padding:8px 14px; border-radius:9px; font-size:11.5px; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; display:inline-flex; align-items:center; gap:7px;
+  transition:.18s;
+}
+.btn:hover{border-color:var(--ion);box-shadow:var(--glow);color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn-key{background:linear-gradient(180deg,rgba(242,163,60,.22),rgba(242,163,60,.08));border-color:rgba(242,163,60,.55);color:#FFD9A0}
+.btn-key:hover{border-color:var(--gold);box-shadow:0 0 24px rgba(242,163,60,.3)}
+.btn-sm{padding:6px 11px;font-size:10.5px}
+
+/* ---------- shell ---------- */
+.shell{max-width:1560px;margin:0 auto;padding:22px}
+.panel{
+  background:linear-gradient(180deg,var(--hull),var(--deck));
+  border:1px solid var(--line); border-radius:var(--radius);
+  position:relative; overflow:hidden;
+}
+.panel::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--ion),transparent);opacity:.5;
+}
+.eyebrow{
+  font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim);
+  display:flex;align-items:center;gap:10px;
+}
+.eyebrow::after{content:'';flex:1;height:1px;background:var(--line)}
+
+/* ---------- horizon ---------- */
+.horizon{padding:18px 20px 8px;margin-bottom:18px}
+.horizon svg{width:100%;height:auto;display:block;margin-top:14px}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:10.5px;color:var(--mute);padding:6px 2px 10px}
+.legend i{display:inline-block;width:16px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+/* ---------- tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.tile{padding:14px 16px}
+.tile .k{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.tile .v{font-size:30px;font-weight:700;line-height:1.1;margin-top:6px}
+.tile .s{font-size:10.5px;color:var(--mute);margin-top:2px}
+.v-now{color:var(--flare);text-shadow:0 0 22px rgba(255,84,112,.5)}
+.v-soon{color:var(--gold);text-shadow:0 0 22px rgba(242,163,60,.4)}
+.v-ion{color:var(--ion);text-shadow:var(--glow)}
+
+/* ---------- toolbar ---------- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.field{
+  background:rgba(9,15,28,.9);border:1px solid var(--line);border-radius:9px;
+  color:var(--ink);padding:9px 12px;font-size:13px;
+}
+.field:focus{border-color:var(--ion);box-shadow:var(--glow);outline:none}
+.search{min-width:230px}
+
+/* ---------- card ---------- */
+.card{margin-bottom:14px}
+.card-grid{display:grid;grid-template-columns:minmax(320px,1.15fr) 150px repeat(3,minmax(210px,1fr));gap:0}
+.pad{padding:16px}
+.cell{border-left:1px solid var(--line)}
+.idx{
+  font-size:10px;color:var(--dim);letter-spacing:.2em;
+}
+.name-in{
+  width:100%;background:transparent;border:none;border-bottom:1px solid var(--line);
+  color:var(--ink);font-size:15px;font-weight:600;padding:6px 0;margin:4px 0 14px;
+}
+.name-in:focus{border-color:var(--ion);outline:none}
+.duo{display:flex;gap:10px}
+.lab{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);display:block;margin-bottom:5px}
+.num-in{
+  width:100%;background:rgba(4,6,13,.65);border:1px solid var(--line);border-radius:8px;
+  color:var(--ion);padding:7px 9px;font-size:14px;font-weight:700;
+  font-family:'JetBrains Mono',monospace;
+}
+.num-in:focus{border-color:var(--ion);box-shadow:var(--glow);outline:none}
+.date-in{
+  width:100%;background:rgba(4,6,13,.65);border:1px solid var(--line);border-radius:8px;
+  color:var(--ink);padding:6px 7px;font-size:12px;font-family:'JetBrains Mono',monospace;
+}
+.date-in::-webkit-calendar-picker-indicator{filter:invert(.7) sepia(1) saturate(4) hue-rotate(160deg)}
+.txt-in{
+  width:100%;background:rgba(4,6,13,.65);border:1px solid var(--line);border-radius:8px;
+  color:var(--mute);padding:5px 8px;font-size:11px;font-family:'JetBrains Mono',monospace;
+}
+.real{margin-top:12px;font-size:11px;color:var(--mute);line-height:1.6}
+.real b{color:var(--ink);font-family:'JetBrains Mono',monospace}
+
+/* order gate */
+.gate{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:4px}
+.gate .when{font-size:19px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:-.02em}
+.gate .cap{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.gate .sub{font-size:10.5px;color:var(--mute)}
+.g-now{color:var(--flare);text-shadow:0 0 20px rgba(255,84,112,.55)}
+.g-soon{color:var(--gold);text-shadow:0 0 20px rgba(242,163,60,.4)}
+.g-ok{color:var(--jade)}
+.g-idle{color:var(--dim)}
+
+/* delivery slot */
+.slot{position:relative}
+.slot.live{background:linear-gradient(180deg,rgba(27,111,255,.10),transparent)}
+.slot-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px}
+.slot-n{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.slot.live .slot-n{color:var(--ion)}
+.route{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:end;margin-bottom:10px}
+.transit{font-size:9.5px;color:var(--ion);text-align:center;padding-bottom:8px;white-space:nowrap}
+.proj{border-top:1px solid var(--line);padding-top:9px;font-size:11px;display:grid;grid-template-columns:1fr auto;gap:5px;color:var(--mute)}
+.proj b{font-family:'JetBrains Mono',monospace;color:var(--ink);font-size:12.5px}
+.proj b.neg{color:var(--flare)}
+.proj b.pos{color:var(--jade)}
+
+.rim{height:2px;background:linear-gradient(90deg,transparent,var(--ion),transparent);opacity:.35}
+.rim-now{background:linear-gradient(90deg,transparent,var(--flare),transparent);opacity:.75}
+.rim-soon{background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.6}
+
+.flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.flag{
+  font-size:9.5px;letter-spacing:.06em;padding:3px 8px;border-radius:20px;
+  border:1px solid rgba(242,163,60,.4);color:var(--gold);background:rgba(242,163,60,.08);
+}
+.flag.bad{border-color:rgba(255,84,112,.45);color:var(--flare);background:rgba(255,84,112,.08)}
+
+.drawer{border-top:1px solid var(--line);background:rgba(4,6,13,.5);padding:18px}
+.ai-text{white-space:pre-wrap;line-height:1.75;font-size:13px;color:#CBDDF2;max-height:520px;overflow:auto}
+
+.toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:200;
+  background:rgba(15,24,41,.97);border:1px solid var(--line2);border-radius:11px;
+  padding:12px 20px;font-size:13px;box-shadow:0 0 40px rgba(27,111,255,.35);
+}
+.toast.err{border-color:rgba(255,84,112,.6);color:#FFC4CE}
+
+.empty{text-align:center;padding:64px 24px;color:var(--mute)}
+.empty h2{font-weight:600;font-size:17px;color:var(--ink);margin:0 0 8px}
+
+/* settings */
+.sett{max-width:760px;margin:0 auto}
+.sett h3{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ion);margin:26px 0 12px;font-weight:600}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.hint{font-size:10.5px;color:var(--dim);margin-top:5px;line-height:1.5}
+
+@media (max-width:1180px){
+  .card-grid{grid-template-columns:1fr 1fr}
+  .cell{border-left:none;border-top:1px solid var(--line)}
+}
+@media (max-width:720px){
+  .card-grid{grid-template-columns:1fr}
+  .shell{padding:14px}
+  .hud{padding:10px 14px;gap:12px}
+}
+@media (prefers-reduced-motion:no-preference){
+  @keyframes sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+  .scan{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .scan i{position:absolute;top:0;bottom:0;width:34%;
+    background:linear-gradient(90deg,transparent,rgba(76,201,240,.05),transparent);
+    animation:sweep 9s linear infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+  .pulse{animation:pulse 2.2s ease-in-out infinite}
+}
+
+/* світла тема для друку / PDF */
+.export-light{
+  --void:#FFFFFF;--deck:#FFFFFF;--hull:#F7F9FC;--hull2:#EEF3F9;
+  --line:#D6E0EC;--line2:#B9C9DC;--ink:#0B1220;--mute:#4B5B70;--dim:#7A8CA8;
+  --ion:#0B69C7;--gold:#B26A00;--flare:#C81E4A;--jade:#0F7A55;--glow:none;
+  background-image:none !important;background:#fff !important;
+}
+.export-light .panel{box-shadow:none}
+.export-light .no-print{display:none !important}
+.export-light .num-in,.export-light .date-in,.export-light .txt-in,.export-light .name-in{
+  background:transparent;border-color:#D6E0EC;color:#0B1220
+}
+.export-light .scan{display:none}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useMemo, useRef } = React;
+
+/* ================= утиліти ================= */
+const DAY = 86400000;
+const num = v => { const n = parseFloat(String(v ?? '').replace(/\s|\u00A0/g,'').replace(',','.')); return isFinite(n) ? n : 0; };
+const midnight = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
+const parseISO = s => { const m = String(s||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(+m[1],+m[2]-1,+m[3]) : null; };
+const toISO = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const dayDiff = (a,b) => Math.round((midnight(b) - midnight(a)) / DAY);
+const addDays = (d,n) => new Date(d.getTime() + n*DAY);
+const fmtD = d => d ? `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}` : '—';
+const fmtN = v => (v===null || v===undefined || !isFinite(v)) ? '—' : Math.round(v).toLocaleString('uk-UA').replace(/,/g,' ');
+const fmtM = v => v===Infinity ? '∞' : (isFinite(v) ? v.toFixed(1) : '—');
+const store = {
+  get(k,d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+/* ================= розрахунок ================= */
+const HORIZON = 400;
+
+function analyze(item, ctx){
+  const today = ctx.today;
+  const stockDate = ctx.stockDate || today;
+  const monthly = num(item.consumption);
+  const daily = monthly / 30;
+  const entered = num(item.stock);
+  const leadTime = ctx.leadTime;
+  const safetyUnits = monthly * num(ctx.minStock);
+  const overUnits = monthly * num(ctx.overStock);
+
+  const dels = [1,2,3].map(n => ({
+    n,
+    qty: num(item['d'+n+'Qty']),
+    send: parseISO(item['d'+n+'Send']),
+    arrive: parseISO(item['d'+n+'Date']),
+    cont: item['d'+n+'Cont'] || ''
+  }));
+
+  // залишок, приведений до сьогодні
+  const aged = Math.max(0, dayDiff(stockDate, today));
+  let stockNow = entered - aged * daily;
+  dels.forEach(d => {
+    if (d.arrive && d.qty > 0 && d.arrive > stockDate && d.arrive <= today) stockNow += d.qty;
+  });
+
+  const future = dels.filter(d => d.arrive && d.qty > 0 && d.arrive > today)
+                     .map(d => ({...d, day: dayDiff(today, d.arrive)}))
+                     .sort((a,b) => a.day - b.day);
+
+  const stockAt = day => {
+    let s = stockNow - day * daily;
+    for (const d of future) if (d.day <= day) s += d.qty;
+    return s;
+  };
+  const firstBelow = threshold => {
+    if (daily <= 0) return null;
+    for (let d = 0; d <= HORIZON; d++) if (stockAt(d) < threshold) return d;
+    return null;
+  };
+
+  const outDay    = firstBelow(0);
+  const safetyDay = firstBelow(safetyUnits);
+  const orderDay  = safetyDay === null ? null : safetyDay - leadTime;
+
+  let state = 'ok';
+  if (monthly <= 0) state = 'idle';
+  else if (orderDay !== null && orderDay <= 0) state = 'now';
+  else if (orderDay !== null && orderDay <= 30) state = 'soon';
+  else if (stockNow > overUnits && overUnits > 0) state = 'over';
+
+  // per-delivery проєкція
+  const slots = {};
+  dels.forEach(d => {
+    if (!d.arrive) { slots[d.n] = null; return; }
+    const day = dayDiff(today, d.arrive);
+    if (day <= 0) { slots[d.n] = { arrived:true, day, before:null, after:null }; return; }
+    const before = stockAt(day) - d.qty;
+    slots[d.n] = { arrived:false, day, before, after: before + d.qty };
+  });
+
+  // аномалії даних
+  const flags = [];
+  dels.forEach(d => {
+    if (d.send && d.arrive && d.arrive < d.send) flags.push({t:`Поставка ${d.n}: прибуття раніше за відправку`, bad:true});
+    if (d.send && d.arrive){
+      const tr = dayDiff(d.send, d.arrive);
+      if (tr > 150) flags.push({t:`Поставка ${d.n}: транзит ${tr} дн — перевірте рік`, bad:true});
+    }
+    if (d.arrive && dayDiff(today, d.arrive) > 365) flags.push({t:`Поставка ${d.n}: прибуття ${fmtD(d.arrive)} — перевірте рік`, bad:false});
+    if (d.qty > 0 && !d.arrive) flags.push({t:`Поставка ${d.n}: є кількість, немає дати прибуття`, bad:false});
+    if (d.arrive && d.qty <= 0) flags.push({t:`Поставка ${d.n}: є дата, немає кількості`, bad:false});
+  });
+  if (monthly <= 0 && entered > 0) flags.push({t:'Витрата не вказана — покриття не рахується', bad:false});
+  if (stockNow < 0) flags.push({t:'Розрахунковий залишок від\u2019ємний', bad:true});
+
+  return {
+    monthly, daily, entered, aged, stockNow, safetyUnits, overUnits,
+    covNow: monthly > 0 ? stockNow / monthly : Infinity,
+    covEntered: monthly > 0 ? entered / monthly : Infinity,
+    dels, future, slots, flags, state,
+    outDay, safetyDay, orderDay,
+    outDate: outDay === null ? null : addDays(today, outDay),
+    orderDate: orderDay === null ? null : addDays(today, orderDay),
+    stockAt
+  };
+}
+
+/* ================= горизонт (сигнатурний елемент) ================= */
+function Horizon({ rows, today, onPick }){
+  const W = 1500, padL = 250, padR = 30, padT = 26, rowH = 17;
+  const days = 365;
+  const inner = W - padL - padR;
+  const H = padT + rows.length * rowH + 26;
+  const x = d => padL + (d / days) * inner;
+
+  const months = [];
+  for (let i = 0; i <= days; i++){
+    const dt = addDays(today, i);
+    if (dt.getDate() === 1) months.push({ d:i, label: dt.toLocaleDateString('uk-UA',{month:'short'}), first: dt.getMonth()===0 });
+  }
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" role="img"
+         aria-label="Горизонт постачання на 12 місяців">
+      <defs>
+        <linearGradient id="todayG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#4CC9F0" stopOpacity="0"/>
+          <stop offset="20%" stopColor="#4CC9F0" stopOpacity=".9"/>
+          <stop offset="100%" stopColor="#4CC9F0" stopOpacity=".15"/>
+        </linearGradient>
+      </defs>
+
+      {months.map(m => (
+        <g key={m.d}>
+          <line x1={x(m.d)} y1={padT-8} x2={x(m.d)} y2={H-20} stroke="rgba(120,180,255,.09)" strokeWidth="1"/>
+          <text x={x(m.d)} y={H-6} fill="#4A5C77" fontSize="10" textAnchor="middle"
+                fontFamily="JetBrains Mono, monospace">{m.first ? m.label.toUpperCase()+' \u0027'+String(addDays(today,m.d).getFullYear()).slice(2) : m.label}</text>
+        </g>
+      ))}
+
+      <line x1={x(0)} y1={padT-14} x2={x(0)} y2={H-20} stroke="url(#todayG)" strokeWidth="2"/>
+      <text x={x(0)} y={padT-18} fill="#4CC9F0" fontSize="10" textAnchor="middle"
+            fontFamily="JetBrains Mono, monospace" letterSpacing="1.5">СЬОГОДНІ</text>
+
+      {rows.map((r, i) => {
+        const y = padT + i * rowH;
+        const a = r.a;
+        const cells = [];
+        for (let w = 0; w < 52; w++){
+          const d0 = w * 7;
+          const s = a.stockAt(d0);
+          let fill = 'rgba(61,220,151,.42)';
+          if (a.monthly <= 0) fill = 'rgba(74,92,119,.22)';
+          else if (s < 0) fill = 'rgba(255,84,112,.85)';
+          else if (s < a.safetyUnits) fill = 'rgba(242,163,60,.75)';
+          cells.push(<rect key={w} x={x(d0)} y={y+4} width={inner/52 - 1} height="7" rx="1.5" fill={fill}/>);
+        }
+        return (
+          <g key={r.item.id} style={{cursor:'pointer'}} onClick={() => onPick(r.item.id)}>
+            <rect x="0" y={y-1} width={W} height={rowH} fill="transparent"/>
+            <text x={padL-12} y={y+11} fill={a.state==='now'?'#FF5470':a.state==='soon'?'#F2A33C':'#7C8FAC'}
+                  fontSize="11" textAnchor="end">
+              {r.item.name.length > 38 ? r.item.name.slice(0,37)+'…' : r.item.name}
+            </text>
+            {cells}
+            {a.future.map(d => d.day <= days && (
+              <g key={d.n}>
+                <line x1={x(d.day)} y1={y+2} x2={x(d.day)} y2={y+13} stroke="#4CC9F0" strokeWidth="2"/>
+                <circle cx={x(d.day)} cy={y+7.5} r="3.5" fill="#4CC9F0"/>
+              </g>
+            ))}
+            {a.orderDay !== null && a.orderDay > 0 && a.orderDay <= days && (
+              <polygon points={`${x(a.orderDay)},${y+1} ${x(a.orderDay)+5},${y+8} ${x(a.orderDay)},${y+15} ${x(a.orderDay)-5},${y+8}`}
+                       fill="#F2A33C"/>
+            )}
+            {a.orderDay !== null && a.orderDay <= 0 && (
+              <polygon className="pulse" points={`${x(0)},${y+1} ${x(0)+5},${y+8} ${x(0)},${y+15} ${x(0)-5},${y+8}`} fill="#FF5470"/>
+            )}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/* ================= графік позиції ================= */
+function ItemChart({ a, today }){
+  const W = 1200, H = 250, padL = 78, padR = 54, padT = 22, padB = 30;
+  const iw = W-padL-padR, ih = H-padT-padB;
+  const days = Math.max(200, ...a.future.map(d => d.day + 40));
+  const pts = [];
+  for (let d = 0; d <= days; d += 2) pts.push({d, s: a.stockAt(d)});
+  const vals = pts.map(p => p.s).concat([a.safetyUnits, a.overUnits, 0]);
+  const yMax = Math.max(...vals) * 1.12 || 1;
+  const yMin = Math.min(...vals, 0) * 1.12;
+  const X = d => padL + (d/days)*iw;
+  const Y = s => padT + ih - ((s - yMin)/((yMax-yMin)||1))*ih;
+  const path = pts.map((p,i) => `${i?'L':'M'} ${X(p.d).toFixed(1)},${Y(p.s).toFixed(1)}`).join(' ');
+  const area = `${path} L ${X(days)},${Y(yMin)} L ${padL},${Y(yMin)} Z`;
+
+  const ticks = [];
+  for (let d = 0; d <= days; d += 30) ticks.push(d);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%',height:'auto'}}>
+      <defs>
+        <linearGradient id="fillG" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#4CC9F0" stopOpacity=".28"/>
+          <stop offset="100%" stopColor="#4CC9F0" stopOpacity="0"/>
+        </linearGradient>
+      </defs>
+      {ticks.map(d => (
+        <g key={d}>
+          <line x1={X(d)} y1={padT} x2={X(d)} y2={H-padB} stroke="rgba(120,180,255,.07)"/>
+          <text x={X(d)} y={H-padB+16} fill="#4A5C77" fontSize="10" textAnchor="middle"
+                fontFamily="JetBrains Mono, monospace">{fmtD(addDays(today,d)).slice(0,5)}</text>
+        </g>
+      ))}
+      {a.overUnits > 0 && a.overUnits < yMax && (
+        <g><line x1={padL} y1={Y(a.overUnits)} x2={W-padR} y2={Y(a.overUnits)} stroke="#8B5CF6" strokeDasharray="6 5" strokeWidth="1.2"/>
+           <text x={padL-8} y={Y(a.overUnits)+4} fill="#8B5CF6" fontSize="10" textAnchor="end">оверсток</text></g>
+      )}
+      {a.safetyUnits > 0 && (
+        <g><line x1={padL} y1={Y(a.safetyUnits)} x2={W-padR} y2={Y(a.safetyUnits)} stroke="#F2A33C" strokeDasharray="6 5" strokeWidth="1.2"/>
+           <text x={padL-8} y={Y(a.safetyUnits)+4} fill="#F2A33C" fontSize="10" textAnchor="end">мін. запас</text></g>
+      )}
+      <line x1={padL} y1={Y(0)} x2={W-padR} y2={Y(0)} stroke="#FF5470" strokeWidth="1.2" strokeDasharray="4 4"/>
+      <text x={padL-8} y={Y(0)+4} fill="#FF5470" fontSize="10" textAnchor="end">0</text>
+
+      <path d={area} fill="url(#fillG)"/>
+      <path d={path} fill="none" stroke="#4CC9F0" strokeWidth="2.4" strokeLinejoin="round"/>
+
+      {a.future.map(d => (
+        <g key={d.n}>
+          <line x1={X(d.day)} y1={padT} x2={X(d.day)} y2={H-padB} stroke="rgba(76,201,240,.35)" strokeDasharray="3 4"/>
+          <circle cx={X(d.day)} cy={Y(a.stockAt(d.day))} r="5" fill="#3DDC97"/>
+          <text x={X(d.day)} y={Y(a.stockAt(d.day))-12} fill="#3DDC97" fontSize="11" textAnchor="middle"
+                fontFamily="JetBrains Mono, monospace">+{fmtN(d.qty)}</text>
+        </g>
+      ))}
+      {a.orderDay !== null && a.orderDay >= 0 && a.orderDay <= days && (
+        <g>
+          <line x1={X(a.orderDay)} y1={padT} x2={X(a.orderDay)} y2={H-padB} stroke="#F2A33C" strokeWidth="1.6"/>
+          <text x={X(a.orderDay)+6} y={padT+12} fill="#F2A33C" fontSize="11" fontWeight="700">замовити</text>
+        </g>
+      )}
+      <circle cx={X(0)} cy={Y(a.stockNow)} r="5" fill="#4CC9F0"/>
+    </svg>
+  );
+}
+
+/* ================= слот доставки ================= */
+function Slot({ n, item, a, onChange }){
+  const s = a.slots[n];
+  const send = item['d'+n+'Send'], arrive = item['d'+n+'Date'];
+  const qty = item['d'+n+'Qty'], cont = item['d'+n+'Cont'];
+  const live = num(qty) > 0 || !!arrive || !!send;
+  let transit = null;
+  const sd = parseISO(send), ad = parseISO(arrive);
+  if (sd && ad) transit = dayDiff(sd, ad);
+
+  return (
+    <div className={`pad cell slot ${live?'live':''}`}>
+      <div className="slot-h">
+        <span className="slot-n">Поставка {n}</span>
+        <input className="txt-in" style={{width:'110px'}} value={cont||''} placeholder="контейнер"
+               onChange={e => onChange(`d${n}Cont`, e.target.value)}/>
+      </div>
+      <div className="route">
+        <div>
+          <span className="lab">Відправка</span>
+          <input type="date" className="date-in" value={send||''} onChange={e => onChange(`d${n}Send`, e.target.value)}/>
+        </div>
+        <div className="transit">{transit !== null ? `${transit} дн` : '·'}</div>
+        <div>
+          <span className="lab">Прибуття</span>
+          <input type="date" className="date-in" value={arrive||''} onChange={e => onChange(`d${n}Date`, e.target.value)}/>
+        </div>
+      </div>
+      <div>
+        <span className="lab">Кількість, шт</span>
+        <input type="number" className="num-in" value={qty===0?'':qty} placeholder="0"
+               onChange={e => onChange(`d${n}Qty`, e.target.value)}/>
+      </div>
+      <div className="proj">
+        {!s ? <><span>Порожній слот</span><b>—</b></> :
+         s.arrived ? <><span>Прибула</span><b className="pos">враховано в залишку</b></> :
+         <>
+           <span>За день до приходу</span><b className={s.before < 0 ? 'neg' : ''}>{fmtN(s.before)}</b>
+           <span>Після приходу</span><b className="pos">{fmtN(s.after)}</b>
+         </>}
+      </div>
+    </div>
+  );
+}
+
+/* ================= картка ================= */
+function Card({ item, a, index, onChange, onRemove, chart, ai, onChart, onAi, aiText, aiBusy }){
+  const gateCls = a.state==='now' ? 'g-now' : a.state==='soon' ? 'g-soon' : a.state==='idle' ? 'g-idle' : 'g-ok';
+  const rimCls = a.state==='now' ? 'rim rim-now' : a.state==='soon' ? 'rim rim-soon' : 'rim';
+
+  return (
+    <div className="panel card" id={'item-'+item.id}>
+      <div className={rimCls}></div>
+      <div className="card-grid">
+        <div className="pad">
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+            <span className="idx mono">{String(index+1).padStart(2,'0')}</span>
+            <button className="btn btn-sm no-print" onClick={onRemove} title="Видалити позицію">✕</button>
+          </div>
+          <input className="name-in" value={item.name} onChange={e => onChange('name', e.target.value)}/>
+          <div className="duo">
+            <div style={{flex:1}}>
+              <span className="lab">Залишок у таблиці</span>
+              <input type="number" className="num-in" value={item.stock} onChange={e => onChange('stock', e.target.value)}/>
+            </div>
+            <div style={{flex:1}}>
+              <span className="lab">Витрата / міс</span>
+              <input type="number" className="num-in" value={item.consumption} onChange={e => onChange('consumption', e.target.value)}/>
+            </div>
+          </div>
+          <div className="real">
+            Розрахунок на сьогодні: <b style={{color:a.stockNow<0?'var(--flare)':'var(--ion)'}}>{fmtN(a.stockNow)} шт</b>
+            {a.aged > 0 && <> · списано {a.aged} дн × {fmtN(a.daily)} шт</>}
+            <br/>
+            Покриття: <b>{fmtM(a.covNow)} міс</b>
+            {a.outDate && <> · нуль {fmtD(a.outDate)}</>}
+          </div>
+          {a.flags.length > 0 && (
+            <div className="flags">
+              {a.flags.map((f,i) => <span key={i} className={'flag'+(f.bad?' bad':'')}>{f.t}</span>)}
+            </div>
+          )}
+          <div className="flags no-print" style={{marginTop:14}}>
+            <button className="btn btn-sm" onClick={onChart}>{chart?'Згорнути графік':'Графік'}</button>
+            <button className="btn btn-sm" onClick={onAi} disabled={aiBusy}>{aiBusy?'Аналізую…':'Оцінка ризиків'}</button>
+          </div>
+        </div>
+
+        <div className="pad cell gate">
+          <span className="cap">Замовити до</span>
+          <span className={'when '+gateCls}>
+            {a.state==='idle' ? '—' : a.orderDate ? (a.orderDay <= 0 ? 'ВЖЕ' : fmtD(a.orderDate)) : 'не треба'}
+          </span>
+          <span className="sub">
+            {a.state==='idle' ? 'немає витрати' :
+             a.orderDay === null ? 'запасу вистачає' :
+             a.orderDay <= 0 ? `прострочено на ${-a.orderDay} дн` : `через ${a.orderDay} дн`}
+          </span>
+        </div>
+
+        <Slot n={1} item={item} a={a} onChange={onChange}/>
+        <Slot n={2} item={item} a={a} onChange={onChange}/>
+        <Slot n={3} item={item} a={a} onChange={onChange}/>
+      </div>
+
+      {chart && <div className="drawer"><ItemChart a={a} today={midnight(new Date())}/></div>}
+      {ai && (
+        <div className="drawer">
+          <div className="eyebrow" style={{marginBottom:12}}>Оцінка ризиків</div>
+          {aiBusy ? <div style={{color:'var(--ion)'}} className="pulse">Аналізую маршрут, календар і залишки…</div>
+                  : <div className="ai-text">{aiText}</div>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ================= додаток ================= */
+function App(){
+  const [items, setItems] = useState([]);
+  const [tab, setTab] = useState('deck');
+  const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const [revision, setRevision] = useState(null);
+  const [meta, setMeta] = useState({});
+  const [toast, setToast] = useState(null);
+  const [chartOpen, setChartOpen] = useState({});
+  const [aiOpen, setAiOpen] = useState({});
+  const [aiText, setAiText] = useState({});
+  const [aiBusy, setAiBusy] = useState({});
+  const [q, setQ] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [sort, setSort] = useState('urgency');
+  const [today, setToday] = useState(() => midnight(new Date()));
+
+  const [cfg, setCfg] = useState(() => Object.assign({
+    url:'', token:'', user:'', apiKey:'',
+    order:20, sea:60, port:30, minStock:1.5, overStock:5,
+    stockDate: toISO(midnight(new Date()))
+  }, store.get('mrp_cfg_v2', {})));
+
+  useEffect(() => { store.set('mrp_cfg_v2', cfg); }, [cfg]);
+  useEffect(() => {
+    const t = setInterval(() => setToday(midnight(new Date())), 60*60*1000);
+    return () => clearInterval(t);
+  }, []);
+  useEffect(() => {
+    const warn = e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
+  useEffect(() => { if (cfg.url && cfg.token) load(true); }, []);
+
+  const say = (text, err) => { setToast({text, err}); setTimeout(() => setToast(null), 5000); };
+  const leadTime = num(cfg.order) + num(cfg.sea) + num(cfg.port);
+
+  /* ---- API ---- */
+  const call = async payload => {
+    if (!cfg.url) throw new Error('Не вказано адресу скрипта');
+    if (!cfg.token) throw new Error('Не вказано токен доступу');
+    const res = await fetch(cfg.url, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(Object.assign({ token: cfg.token.trim(), user: cfg.user || 'без імені' }, payload))
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  };
+
+  const load = async silent => {
+    if (dirty && !silent && !confirm('Є незбережені зміни. Синхронізація їх затре. Продовжити?')) return;
+    setBusy(true);
+    try{
+      const r = await call({ action:'load' });
+      if (r.status !== 'success') throw new Error(r.error || r.code);
+      setItems((r.rows||[]).filter(row => String(row[0]||'').trim()).map(row => ({
+        id: (self.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'i'+Math.random().toString(36).slice(2),
+        name:String(row[0]).trim(), stock:num(row[1]), consumption:num(row[2]),
+        d1Send:row[3]||'', d1Date:row[4]||'', d1Qty:num(row[5]), d1Cont:String(row[6]||''),
+        d2Send:row[7]||'', d2Date:row[8]||'', d2Qty:num(row[9]), d2Cont:String(row[10]||''),
+        d3Send:row[11]||'', d3Date:row[12]||'', d3Qty:num(row[13]), d3Cont:String(row[14]||'')
+      })));
+      setRevision(r.revision);
+      setMeta({ at:new Date(), by:r.lastSavedBy, when:r.lastSavedAt });
+      setDirty(false);
+      if (r.stockLabel){
+        const m = String(r.stockLabel).match(/(\d{2})\.(\d{2})\.(\d{4})/);
+        if (m) setCfg(c => Object.assign({}, c, { stockDate:`${m[3]}-${m[2]}-${m[1]}` }));
+      }
+      if (!silent) say('Дані завантажено');
+    }catch(e){ say('Не завантажено: ' + e.message, true); }
+    finally{ setBusy(false); }
+  };
+
+  const save = async (opts = {}) => {
+    setSaving(true);
+    try{
+      const rows = items.map(i => [
+        i.name, i.stock, i.consumption,
+        i.d1Send, i.d1Date, i.d1Qty, i.d1Cont||'',
+        i.d2Send, i.d2Date, i.d2Qty, i.d2Cont||'',
+        i.d3Send, i.d3Date, i.d3Qty, i.d3Cont||''
+      ]);
+      const r = await call(Object.assign({ action:'save', rows, revision }, opts));
+      if (r.code === 'conflict'){
+        setSaving(false);
+        if (confirm(`Таблицю змінив «${r.changedBy}» (${r.changedAt}).\nПерезаписати його правки вашими?`))
+          return save(Object.assign({}, opts, { overwrite:true }));
+        return;
+      }
+      if (r.code === 'confirm_required'){
+        setSaving(false);
+        if (confirm(r.error + '\n\nПродовжити?')) return save(Object.assign({}, opts, { confirmDelete:true }));
+        return;
+      }
+      if (r.status !== 'success') throw new Error(r.error || r.code);
+      setRevision(r.revision); setDirty(false);
+      say(`${r.message}. Резервна копія: ${r.backup}`);
+    }catch(e){ say('Не збережено: ' + e.message, true); }
+    finally{ setSaving(false); }
+  };
+
+  /* ---- редагування ---- */
+  const change = (id, field, value) => {
+    setItems(prev => prev.map(i => i.id === id ? Object.assign({}, i, {[field]:value}) : i));
+    setDirty(true);
+    setAiText(prev => { const n = Object.assign({}, prev); delete n[id]; return n; });
+  };
+  const addItem = () => {
+    setItems(prev => [{
+      id:'n'+Date.now(), name:'Нова позиція', stock:0, consumption:0,
+      d1Send:'',d1Date:'',d1Qty:0,d1Cont:'', d2Send:'',d2Date:'',d2Qty:0,d2Cont:'', d3Send:'',d3Date:'',d3Qty:0,d3Cont:''
+    }, ...prev]);
+    setDirty(true);
+  };
+  const removeItem = (id, name) => {
+    if (!confirm(`Видалити позицію «${name || 'без назви'}»?`)) return;
+    setItems(prev => prev.filter(i => i.id !== id));
+    setDirty(true);
+  };
+
+  /* ---- аналітика ---- */
+  const ctx = useMemo(() => ({
+    today, stockDate: parseISO(cfg.stockDate) || today,
+    leadTime, minStock: cfg.minStock, overStock: cfg.overStock
+  }), [today, cfg.stockDate, leadTime, cfg.minStock, cfg.overStock]);
+
+  const rows = useMemo(() => items.map(item => ({ item, a: analyze(item, ctx) })), [items, ctx]);
+
+  const view = useMemo(() => {
+    let r = rows.slice();
+    if (q.trim()) r = r.filter(x => x.item.name.toLowerCase().includes(q.trim().toLowerCase()));
+    if (filter === 'now')   r = r.filter(x => x.a.state === 'now');
+    if (filter === 'risk')  r = r.filter(x => x.a.state === 'now' || x.a.state === 'soon');
+    if (filter === 'flags') r = r.filter(x => x.a.flags.length > 0);
+    if (filter === 'over')  r = r.filter(x => x.a.state === 'over');
+    const key = x => x.a.orderDay === null ? 99999 : x.a.orderDay;
+    if (sort === 'urgency') r.sort((x,y) => key(x) - key(y));
+    if (sort === 'cover')   r.sort((x,y) => (x.a.covNow===Infinity?9e9:x.a.covNow) - (y.a.covNow===Infinity?9e9:y.a.covNow));
+    if (sort === 'name')    r.sort((x,y) => x.item.name.localeCompare(y.item.name,'uk'));
+    return r;
+  }, [rows, q, filter, sort]);
+
+  const stat = useMemo(() => ({
+    total: rows.length,
+    now: rows.filter(r => r.a.state === 'now').length,
+    soon: rows.filter(r => r.a.state === 'soon').length,
+    transit: rows.reduce((s,r) => s + r.a.future.length, 0),
+    flags: rows.filter(r => r.a.flags.length > 0).length
+  }), [rows]);
+
+  const stale = Math.max(0, dayDiff(parseISO(cfg.stockDate) || today, today));
+
+  /* ---- AI ---- */
+  const runAi = async (item, a) => {
+    setAiOpen(p => Object.assign({}, p, {[item.id]: !p[item.id]}));
+    if (aiText[item.id] || aiOpen[item.id]) return;
+    if (!cfg.apiKey){ setAiText(p => Object.assign({}, p, {[item.id]:'Додайте ключ Gemini у налаштуваннях, щоб отримати оцінку ризиків.'})); return; }
+    setAiBusy(p => Object.assign({}, p, {[item.id]:true}));
+    try{
+      const key = cfg.apiKey.trim();
+      const lr = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`);
+      const ld = await lr.json();
+      if (!lr.ok) throw new Error(ld?.error?.message || 'ключ відхилено');
+      const names = (ld.models||[])
+        .filter(m => (m.supportedGenerationMethods||[]).includes('generateContent') && m.name.includes('gemini'))
+        .map(m => m.name.replace('models/',''));
+      const model = names.find(n => n.includes('flash') && !n.includes('preview') && !n.includes('exp')) || names.find(n => n.includes('flash')) || names[0];
+      if (!model) throw new Error('немає доступних моделей');
+
+      const prompt = `Ти — керівник ланцюга постачань. Товар іде з Китаю морем.
+Дата розрахунку: ${fmtD(today)}. Логістичне плече: ${leadTime} дн (замовлення ${cfg.order} + море ${cfg.sea} + порт/митниця ${cfg.port}).
+Політика запасів: мінімум ${cfg.minStock} міс, оверсток ${cfg.overStock} міс.
+
+Позиція: "${item.name}"
+- залишок у таблиці на ${fmtD(parseISO(cfg.stockDate))}: ${fmtN(a.entered)} шт
+- розрахунковий залишок сьогодні: ${fmtN(a.stockNow)} шт (покриття ${fmtM(a.covNow)} міс)
+- витрата: ${fmtN(a.monthly)} шт/міс
+- вихід у нуль: ${a.outDate ? fmtD(a.outDate) : 'поза горизонтом'}
+- розрахункова дата замовлення: ${a.orderDate ? fmtD(a.orderDate) : 'не потрібно'}
+- поставки в дорозі: ${a.future.length ? a.future.map(d => `${fmtN(d.qty)} шт на ${fmtD(d.arrive)}`).join('; ') : 'немає'}
+
+Дай коротко (до 200 слів), українською:
+1. Чи погоджуєшся з розрахунковою датою замовлення і чому.
+2. Які події на плечі ${leadTime} днів можуть зсунути строки: свята в Китаї, пік сезону, ставки фрахту, порт, митниця, безпекова ситуація в Україні.
+3. Рекомендований запас часу понад розрахунок.
+4. Одна конкретна дія на цей тиждень.
+Без вступів і без переліку вхідних даних.`;
+
+      const rr = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }] })
+      });
+      const rd = await rr.json();
+      if (!rr.ok) throw new Error(rd?.error?.message || ('HTTP '+rr.status));
+      const txt = rd?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!txt) throw new Error('порожня відповідь');
+      setAiText(p => Object.assign({}, p, {[item.id]: txt}));
+    }catch(e){
+      setAiText(p => Object.assign({}, p, {[item.id]: 'Оцінку не отримано: ' + e.message}));
+    }finally{
+      setAiBusy(p => Object.assign({}, p, {[item.id]:false}));
+    }
+  };
+
+  /* ---- PDF ---- */
+  const exportPdf = () => {
+    const el = document.getElementById('deck');
+    if (!el) return;
+    document.body.classList.add('export-light');
+    html2pdf().set({
+      margin:[6,6,6,6],
+      filename:`mrp_${toISO(today)}.pdf`,
+      image:{type:'jpeg',quality:.95},
+      html2canvas:{scale:1.4,useCORS:true,backgroundColor:'#ffffff'},
+      jsPDF:{unit:'mm',format:'a3',orientation:'landscape'}
+    }).from(el).save()
+      .catch(() => say('PDF не сформовано', true))
+      .finally(() => document.body.classList.remove('export-light'));
+  };
+
+  const jump = id => {
+    setChartOpen(p => Object.assign({}, p, {[id]:true}));
+    const el = document.getElementById('item-'+id);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  };
+
+  /* ---- рендер ---- */
+  return (
+    <>
+      <div className="hud no-print">
+        <div className="brand">
+          <img src="https://foodline-production.com/wp-content/uploads/2021/10/3752781497_3752781497.webp" alt=""/>
+          <div className="wordmark">MRP<span>·</span>DECK</div>
+        </div>
+        <div className="hud-tel">
+          <div className="tel">Сьогодні<b className="mono">{fmtD(today)}</b></div>
+          <div className="tel">Залишок актуальний на
+            <b className={'mono '+(stale>14?'warn':'')}>{fmtD(parseISO(cfg.stockDate))}{stale>0?` · ${stale} дн тому`:''}</b>
+          </div>
+          <div className="tel">Плече<b className="mono">{leadTime} дн</b></div>
+          <div className="tel">Синхронізація<b className="mono">{meta.at ? meta.at.toLocaleTimeString('uk-UA',{hour:'2-digit',minute:'2-digit'}) : '—'}{revision?` · rev ${revision}`:''}</b></div>
+          {dirty && <div className="tel">Стан<b className="warn">є незбережені зміни</b></div>}
+        </div>
+        <div className="hud-act">
+          <button className="btn" onClick={() => load(false)} disabled={busy}>{busy?'Читаю…':'Синхронізувати'}</button>
+          <button className="btn btn-key" onClick={() => save()} disabled={saving || !items.length}>{saving?'Пишу…':'Зберегти'}</button>
+          <button className="btn" onClick={addItem}>+ Позиція</button>
+          <button className="btn" onClick={exportPdf}>PDF</button>
+          <button className="btn" onClick={() => setTab(tab==='cfg'?'deck':'cfg')}>{tab==='cfg'?'До палуби':'Налаштування'}</button>
+        </div>
+      </div>
+
+      {tab === 'cfg' ? (
+        <div className="shell sett">
+          <div className="panel pad">
+            <div className="eyebrow">Підключення</div>
+            <h3>Google Apps Script</h3>
+            <label className="lab">Адреса скрипта (/exec)</label>
+            <input className="field mono" style={{width:'100%'}} value={cfg.url}
+                   onChange={e => setCfg(Object.assign({}, cfg, {url:e.target.value}))} placeholder="https://script.google.com/macros/s/…/exec"/>
+            <div className="grid3" style={{marginTop:12}}>
+              <div>
+                <label className="lab">Токен доступу</label>
+                <input type="password" className="field mono" style={{width:'100%'}} value={cfg.token}
+                       onChange={e => setCfg(Object.assign({}, cfg, {token:e.target.value}))}/>
+              </div>
+              <div>
+                <label className="lab">Ваше ім'я — для журналу</label>
+                <input className="field" style={{width:'100%'}} value={cfg.user}
+                       onChange={e => setCfg(Object.assign({}, cfg, {user:e.target.value}))} placeholder="Юрій"/>
+              </div>
+            </div>
+            <p className="hint">Токен зберігається лише у цьому браузері й не потрапляє в репозиторій. Отримати: у редакторі скрипта запустіть setup() і скопіюйте значення з журналу виконання.</p>
+
+            <h3>Актуальність залишку</h3>
+            <label className="lab">Залишок у таблиці станом на</label>
+            <input type="date" className="field mono" value={cfg.stockDate}
+                   onChange={e => setCfg(Object.assign({}, cfg, {stockDate:e.target.value}))}/>
+            <p className="hint">Від цієї дати списується витрата до сьогодні. Якщо колонка B заповнена станом на 02.06, а сьогодні серпень — без цієї дати всі покриття завищені на два місяці.</p>
+
+            <h3>Логістичне плече, дні</h3>
+            <div className="grid3">
+              {[['order','Розміщення замовлення'],['sea','Море'],['port','Порт і митниця']].map(([k,l]) => (
+                <div key={k}>
+                  <label className="lab">{l}</label>
+                  <input type="number" className="field mono" style={{width:'100%'}} value={cfg[k]}
+                         onChange={e => setCfg(Object.assign({}, cfg, {[k]:e.target.value}))}/>
+                </div>
+              ))}
+            </div>
+            <p className="hint">Разом: <b className="mono" style={{color:'var(--ion)'}}>{leadTime} дн</b></p>
+
+            <h3>Політика запасів, місяці</h3>
+            <div className="grid3">
+              <div>
+                <label className="lab">Мінімальний запас</label>
+                <input type="number" step="0.1" className="field mono" style={{width:'100%'}} value={cfg.minStock}
+                       onChange={e => setCfg(Object.assign({}, cfg, {minStock:e.target.value}))}/>
+              </div>
+              <div>
+                <label className="lab">Оверсток</label>
+                <input type="number" step="0.1" className="field mono" style={{width:'100%'}} value={cfg.overStock}
+                       onChange={e => setCfg(Object.assign({}, cfg, {overStock:e.target.value}))}/>
+              </div>
+            </div>
+
+            <h3>Оцінка ризиків</h3>
+            <label className="lab">Ключ Gemini</label>
+            <input type="password" className="field mono" style={{width:'100%'}} value={cfg.apiKey}
+                   onChange={e => setCfg(Object.assign({}, cfg, {apiKey:e.target.value}))} placeholder="AIzaSy…"/>
+            <p className="hint">Необов'язково. Без ключа працює вся математика, не працює лише текстова оцінка ризиків.</p>
+          </div>
+        </div>
+      ) : (
+        <div className="shell" id="deck">
+          {!cfg.url || !cfg.token ? (
+            <div className="panel empty">
+              <h2>Підключіть таблицю</h2>
+              <p>Вкажіть адресу скрипта і токен доступу в налаштуваннях — далі палуба заповниться сама.</p>
+              <button className="btn btn-key" style={{marginTop:14}} onClick={() => setTab('cfg')}>Відкрити налаштування</button>
+            </div>
+          ) : (
+          <>
+            {rows.length > 0 && (
+              <div className="panel horizon">
+                <div className="scan"><i></i></div>
+                <div className="eyebrow">Горизонт постачання · 12 місяців</div>
+                <Horizon rows={view.length?view:rows} today={today} onPick={jump}/>
+                <div className="legend">
+                  <span><i style={{background:'rgba(61,220,151,.6)'}}></i>вище мінімуму</span>
+                  <span><i style={{background:'rgba(242,163,60,.8)'}}></i>нижче мінімуму</span>
+                  <span><i style={{background:'rgba(255,84,112,.9)'}}></i>нуль</span>
+                  <span><i style={{background:'#4CC9F0'}}></i>прихід контейнера</span>
+                  <span><i style={{background:'#F2A33C',transform:'rotate(45deg)',width:9,height:9}}></i>дата замовлення</span>
+                </div>
+              </div>
+            )}
+
+            <div className="tiles">
+              <div className="panel tile"><div className="k">Позицій</div><div className="v v-ion">{stat.total}</div><div className="s">під контролем</div></div>
+              <div className="panel tile"><div className="k">Замовляти зараз</div><div className="v v-now">{stat.now}</div><div className="s">дата замовлення минула</div></div>
+              <div className="panel tile"><div className="k">Ризик ≤ 30 днів</div><div className="v v-soon">{stat.soon}</div><div className="s">готувати заявку</div></div>
+              <div className="panel tile"><div className="k">Контейнерів у дорозі</div><div className="v v-ion">{stat.transit}</div><div className="s">очікується</div></div>
+              <div className="panel tile"><div className="k">Питання до даних</div><div className="v" style={{color:stat.flags?'var(--gold)':'var(--dim)'}}>{stat.flags}</div><div className="s">перевірити рядки</div></div>
+            </div>
+
+            <div className="toolbar no-print">
+              <input className="field search" placeholder="Пошук позиції" value={q} onChange={e => setQ(e.target.value)}/>
+              <select className="field" value={filter} onChange={e => setFilter(e.target.value)}>
+                <option value="all">Усі позиції</option>
+                <option value="now">Замовляти зараз</option>
+                <option value="risk">Ризик ≤ 30 днів</option>
+                <option value="over">Оверсток</option>
+                <option value="flags">Питання до даних</option>
+              </select>
+              <select className="field" value={sort} onChange={e => setSort(e.target.value)}>
+                <option value="urgency">За терміновістю</option>
+                <option value="cover">За покриттям</option>
+                <option value="name">За назвою</option>
+                <option value="sheet">Як у таблиці</option>
+              </select>
+              {stale > 14 && (
+                <span className="flag" style={{padding:'7px 12px'}}>
+                  Залишок старший за {stale} дн — оновіть колонку B або дату в налаштуваннях
+                </span>
+              )}
+            </div>
+
+            {busy && !rows.length ? <div className="panel empty">Читаю таблицю…</div> :
+             !view.length ? <div className="panel empty"><h2>Нічого не знайдено</h2><p>Змініть фільтр або пошуковий запит.</p></div> :
+             view.map((r, i) => (
+               <Card key={r.item.id} item={r.item} a={r.a} index={i}
+                     onChange={(f,v) => change(r.item.id, f, v)}
+                     onRemove={() => removeItem(r.item.id, r.item.name)}
+                     chart={!!chartOpen[r.item.id]} ai={!!aiOpen[r.item.id]}
+                     onChart={() => setChartOpen(p => Object.assign({}, p, {[r.item.id]: !p[r.item.id]}))}
+                     onAi={() => runAi(r.item, r.a)}
+                     aiText={aiText[r.item.id]} aiBusy={!!aiBusy[r.item.id]}/>
+             ))}
+          </>)}
+        </div>
+      )}
+
+      {toast && <div className={'toast'+(toast.err?' err':'')}>{toast.text}</div>}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
