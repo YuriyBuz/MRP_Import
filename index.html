@@ -224,6 +224,7 @@ html[data-theme="dark"] .date-in::-webkit-calendar-picker-indicator{filter:inver
   border:1px solid var(--gold);color:var(--gold);
   background:color-mix(in srgb, var(--gold) 12%, transparent);
 }
+.flag.soft{border-color:var(--line2);color:var(--dim);background:transparent}
 .flag.bad{border-color:var(--flare);color:var(--flare);background:color-mix(in srgb, var(--flare) 12%, transparent)}
 
 .drawer{border-top:1px solid var(--line);background:var(--sheen);padding:18px}
@@ -279,7 +280,7 @@ const midnight = d => { const x = new Date(d); x.setHours(0,0,0,0); return x; };
 const parseISO = s => { const m = String(s||'').match(/^(\d{4})-(\d{2})-(\d{2})/); return m ? new Date(+m[1],+m[2]-1,+m[3]) : null; };
 const toISO = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 const dayDiff = (a,b) => Math.round((midnight(b) - midnight(a)) / DAY);
-const addDays = (d,n) => new Date(d.getTime() + n*DAY);
+const addDays = (d,n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
 const fmtD = d => d ? `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}` : '—';
 const fmtN = v => (v===null || v===undefined || !isFinite(v)) ? '—' : Math.round(v).toLocaleString('uk-UA').replace(/,/g,' ');
 const fmtM = v => v===Infinity ? '∞' : (isFinite(v) ? v.toFixed(1) : '—');
@@ -299,6 +300,22 @@ const STAGES = [
   { k:'done',    s:'СКЛ',  t:'Прийнято на склад' }
 ];
 const stageIdx = k => STAGES.findIndex(s => s.k === k);
+const stageFromCell = v => {
+  const t = String(v||'').trim(); if (!t) return '';
+  const m = STAGES.find(s => s.k === t)
+        || STAGES.find(s => s.t.toLowerCase() === t.toLowerCase())
+        || STAGES.find(s => s.s.toLowerCase() === t.toLowerCase());
+  return m ? m.k : '';
+};
+const stageToCell = k => { const s = STAGES.find(x => x.k === k); return s ? s.t : ''; };
+const payFromCell = v => {
+  const t = String(v||'').trim().toLowerCase();
+  if (!t || t === 'без оплати' || t === '—' || t === '-') return '';
+  if (t.indexOf('перед') === 0 || t === 'pre') return 'pre';
+  if (t.indexOf('повн') === 0 || t === 'full') return 'full';
+  return '';
+};
+const payToCell = k => k === 'pre' ? 'Передоплата' : k === 'full' ? 'Повна оплата' : '';
 const SHIPPED = ['sea','port','land','done'];
 const PAYS = [ {k:'',t:'—',full:'Без оплати'}, {k:'pre',t:'ПЕРЕД',full:'Передоплата'}, {k:'full',t:'ПОВНА',full:'Повна оплата'} ];
 
@@ -410,7 +427,7 @@ function analyze(item, ctx){
     if (d.arrive && dayDiff(today, d.arrive) > 270) flags.push({t:`Поставка ${d.n}: прибуття ${fmtD(d.arrive)} — перевірте рік`, bad:false});
     if (d.qty > 0 && !d.arrive) flags.push({t:`Поставка ${d.n}: є кількість, немає дати прибуття`, bad:false});
     if (d.arrive && d.qty <= 0) flags.push({t:`Поставка ${d.n}: є дата, немає кількості`, bad:false});
-    if (d.qty > 0 && d.arrive && d.arrive > today && !d.stage) flags.push({t:`Поставка ${d.n}: не вказано етап`, bad:false});
+    if (d.qty > 0 && d.arrive && d.arrive > today && !d.stage) flags.push({t:`Поставка ${d.n}: не вказано етап`, bad:false, soft:true});
   });
   if (monthly <= 0 && entered > 0) flags.push({t:'Витрата не вказана — покриття не рахується', bad:false});
   if (preGap > 0) flags.push({t:`Запас вичерпано ще до сьогодні · добрано на ринку ≈ ${fmtN(preGap)} шт`, bad:true});
@@ -472,7 +489,7 @@ function Horizon({ rows, today, onPick, theme }){
           const s = a.stockAt(w*7);
           let fill = 'var(--jade)', op = .8;
           if (a.monthly <= 0){ fill = 'var(--dim)'; op = .3; }
-          else if (s < 0){ fill = 'var(--flare)'; op = 1; }
+          else if (s <= 0.001){ fill = 'var(--flare)'; op = 1; }
           else if (s < a.safety){ fill = 'var(--gold)'; op = .95; }
           cells.push(<rect key={w} x={x(w*7)} y={y+4} width={inner/52 - 1} height="8" rx="1.5" fill={fill} opacity={op}/>);
         }
@@ -612,7 +629,7 @@ function Slot({ n, item, a, onChange }){
                onChange={e => onChange(`d${n}Qty`, e.target.value)}/>
       </div>
 
-      <div className="pipe no-print">
+      {live && <><div className="pipe no-print">
         {STAGES.map((st, i) => (
           <button key={st.k} title={st.t}
                   className={(cur >= 0 && i <= cur ? 'on ' : '') + (st.k==='done' && cur===i ? 'done ' : '') + (i===cur ? 'cur' : '')}
@@ -629,7 +646,7 @@ function Slot({ n, item, a, onChange }){
                     onClick={() => onChange(`d${n}Pay`, p.k)}>{p.t}</button>
           ))}
         </span>
-      </div>
+      </div></>}
 
       <div className="proj">
         {!s ? <><span>Порожній слот</span><b>—</b></> :
@@ -680,13 +697,16 @@ function Card({ item, a, index, theme, onChange, onRemove, chart, ai, onChart, o
             {!a.zeroDate && a.coverDate && <> · запасу до {fmtD(a.coverDate)}</>}
             {a.firstGap && (
               <><br/>Свій запас закінчується <b style={{color:'var(--flare)'}}>{fmtD(a.zeroDate)}</b>
-                {a.zeroEndDate ? <> — поставка {fmtD(addDays(a.zeroEndDate,1))}</> : <> — поставки в горизонті немає</>}
-                <br/>Закупівля на ринку: <b style={{color:'var(--gold)'}}>≈ {fmtN(a.firstGap.qty)} шт</b> за {a.firstGap.to - a.firstGap.from + 1} дн
+                {a.firstGap.open
+                  ? <> — поставки під цей період ще немає<br/>Закрити новим замовленням до <b style={{color:'var(--gold)'}}>{a.orderDate?fmtD(a.orderDate):'—'}</b></>
+                  : <> — поставка {fmtD(addDays(a.zeroEndDate,1))}
+                      <br/>Закупівля на ринку: <b style={{color:'var(--gold)'}}>≈ {fmtN(a.firstGap.qty)} шт</b> за {a.firstGap.to - a.firstGap.from + 1} дн
+                    </>}
               </>
             )}
           </div>
           {a.flags.length > 0 && (
-            <div className="flags">{a.flags.map((f,i) => <span key={i} className={'flag'+(f.bad?' bad':'')}>{f.t}</span>)}</div>
+            <div className="flags">{a.flags.map((f,i) => <span key={i} className={'flag'+(f.bad?' bad':'')+(f.soft?' soft':'')}>{f.t}</span>)}</div>
           )}
           <div className="flags no-print" style={{marginTop:14}}>
             <button className="btn btn-sm" onClick={onChart}>{chart?'Згорнути графік':'Графік'}</button>
@@ -705,7 +725,9 @@ function Card({ item, a, index, theme, onChange, onRemove, chart, ai, onChart, o
              a.orderDay === null ? '' :
              a.orderDay <= 0 ? `прострочено на ${-a.orderDay} дн` : `через ${a.orderDay} дн`}
           </span>
-          {a.coverDate && <span className="sub" style={{marginTop:6}}>запас тримається<br/>до {fmtD(a.coverDate)}</span>}
+          {a.coverUntil !== null && a.coverUntil <= 0
+            ? <span className="sub" style={{marginTop:6,color:'var(--flare)'}}>мінімальний запас<br/>уже пробито</span>
+            : a.coverDate && <span className="sub" style={{marginTop:6}}>запас тримається<br/>до {fmtD(a.coverDate)}</span>}
         </div>
 
         <Slot n={1} item={item} a={a} onChange={onChange}/>
@@ -786,12 +808,12 @@ function App(){
       setItems((r.rows||[]).filter(row => String(row[0]||'').trim()).map(row => ({
         id:(self.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'i'+Math.random().toString(36).slice(2),
         name:String(row[0]).trim(), stock:num(row[1]), consumption:num(row[2]),
-        d1Send:row[3]||'', d1Date:row[4]||'', d1Qty:num(row[5]), d1Cont:String(row[6]||''),
-        d2Send:row[7]||'', d2Date:row[8]||'', d2Qty:num(row[9]), d2Cont:String(row[10]||''),
-        d3Send:row[11]||'', d3Date:row[12]||'', d3Qty:num(row[13]), d3Cont:String(row[14]||''),
-        d1Stage:String(row[15]||''), d1Pay:String(row[16]||''),
-        d2Stage:String(row[17]||''), d2Pay:String(row[18]||''),
-        d3Stage:String(row[19]||''), d3Pay:String(row[20]||'')
+        d1Send:row[3]||'',  d1Date:row[4]||'',  d1Qty:num(row[5]),  d1Cont:String(row[6]||''),
+        d1Stage:stageFromCell(row[7]),  d1Pay:payFromCell(row[8]),
+        d2Send:row[9]||'',  d2Date:row[10]||'', d2Qty:num(row[11]), d2Cont:String(row[12]||''),
+        d2Stage:stageFromCell(row[13]), d2Pay:payFromCell(row[14]),
+        d3Send:row[15]||'', d3Date:row[16]||'', d3Qty:num(row[17]), d3Cont:String(row[18]||''),
+        d3Stage:stageFromCell(row[19]), d3Pay:payFromCell(row[20])
       })));
       setRevision(r.revision);
       setMeta({ at:new Date(), by:r.lastSavedBy });
@@ -810,10 +832,9 @@ function App(){
     try{
       const rows = items.map(i => [
         i.name, i.stock, i.consumption,
-        i.d1Send, i.d1Date, i.d1Qty, i.d1Cont||'',
-        i.d2Send, i.d2Date, i.d2Qty, i.d2Cont||'',
-        i.d3Send, i.d3Date, i.d3Qty, i.d3Cont||'',
-        i.d1Stage||'', i.d1Pay||'', i.d2Stage||'', i.d2Pay||'', i.d3Stage||'', i.d3Pay||''
+        i.d1Send, i.d1Date, i.d1Qty, i.d1Cont||'', stageToCell(i.d1Stage), payToCell(i.d1Pay),
+        i.d2Send, i.d2Date, i.d2Qty, i.d2Cont||'', stageToCell(i.d2Stage), payToCell(i.d2Pay),
+        i.d3Send, i.d3Date, i.d3Qty, i.d3Cont||'', stageToCell(i.d3Stage), payToCell(i.d3Pay)
       ]);
       const r = await call(Object.assign({ action:'save', rows, revision }, opts));
       if (r.code === 'conflict'){
@@ -868,7 +889,7 @@ function App(){
     if (filter === 'risk')  r = r.filter(x => x.a.state === 'now' || x.a.state === 'soon');
     if (filter === 'zero')  r = r.filter(x => x.a.firstZero !== null);
     if (filter === 'over')  r = r.filter(x => x.a.state === 'over');
-    if (filter === 'flags') r = r.filter(x => x.a.flags.length > 0);
+    if (filter === 'flags') r = r.filter(x => x.a.flags.some(f => !f.soft));
     if (filter === 'unpaid') r = r.filter(x => x.a.dels.some(d => d.qty>0 && d.stage && d.stage!=='done' && !d.pay));
     const key = x => x.a.orderDay === null ? 99999 : x.a.orderDay;
     if (sort === 'urgency') r.sort((x,y) => key(x) - key(y));
@@ -881,12 +902,13 @@ function App(){
     total: rows.length,
     now: rows.filter(r => r.a.state === 'now').length,
     soon: rows.filter(r => r.a.state === 'soon').length,
-    gaps: rows.filter(r => r.a.firstGap).length,
+    gaps: rows.filter(r => r.a.firstGap && r.a.firstGap.from <= leadTime).length,
     transit: rows.reduce((s,r) => s + r.a.future.filter(d => d.confirmed).length, 0),
     planned: rows.reduce((s,r) => s + r.a.future.filter(d => !d.confirmed).length, 0),
     unpaid: rows.reduce((s,r) => s + r.a.dels.filter(d => d.qty>0 && d.stage && d.stage!=='done' && !d.pay).length, 0),
-    flags: rows.filter(r => r.a.flags.length > 0).length
-  }), [rows]);
+    flags: rows.filter(r => r.a.flags.some(f => !f.soft)).length,
+    noStage: rows.reduce((s,r) => s + r.a.flags.filter(f => f.soft).length, 0)
+  }), [rows, leadTime]);
 
   const stale = Math.max(0, dayDiff(parseISO(cfg.stockDate) || today, today));
 
@@ -1098,9 +1120,9 @@ function App(){
               <div className="panel tile"><div className="k">Замовляти зараз</div><div className="v v-now">{stat.now}</div><div className="s">дата замовлення минула</div></div>
               <div className="panel tile"><div className="k">Ризик ≤ 30 днів</div><div className="v v-soon">{stat.soon}</div><div className="s">готувати заявку</div></div>
               <div className="panel tile"><div className="k">Відвантажено</div><div className="v v-ion">{stat.transit}</div><div className="s">+{stat.planned} ще не в дорозі</div></div>
-              <div className="panel tile"><div className="k">Купувати на ринку</div><div className="v" style={{color:stat.gaps?'var(--flare)':'var(--dim)'}}>{stat.gaps}</div><div className="s">позицій із розривом</div></div>
+              <div className="panel tile"><div className="k">Купувати на ринку</div><div className="v" style={{color:stat.gaps?'var(--flare)':'var(--dim)'}}>{stat.gaps}</div><div className="s">розрив у межах плеча</div></div>
               <div className="panel tile"><div className="k">Без оплати</div><div className="v" style={{color:stat.unpaid?'var(--gold)':'var(--dim)'}}>{stat.unpaid}</div><div className="s">замовлень не оплачено</div></div>
-              <div className="panel tile"><div className="k">Питання до даних</div><div className="v" style={{color:stat.flags?'var(--gold)':'var(--dim)'}}>{stat.flags}</div><div className="s">перевірити рядки</div></div>
+              <div className="panel tile"><div className="k">Питання до даних</div><div className="v" style={{color:stat.flags?'var(--gold)':'var(--dim)'}}>{stat.flags}</div><div className="s">{stat.noStage?`+${stat.noStage} без етапу`:'перевірити рядки'}</div></div>
             </div>
 
             <div className="toolbar no-print">
